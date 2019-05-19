@@ -5,4 +5,5 @@ set(CMAKE_C_STANDARD 11)
 
 add_executable(Lab2 main.c def.h
         matrixutils.c matrixutils.h
-        mtwister.c mtwister.h)
+        mtwister.c mtwister.h
+        powervalue.c powervalue.h)
