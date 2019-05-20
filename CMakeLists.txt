@@ -8,4 +8,5 @@ add_executable(Lab2 main.c def.h
         mtwister.c mtwister.h
         powervalue.c powervalue.h
         bisection.c bisection.h
-        discretenewton.c discretenewton.h)
+        discretenewton.c discretenewton.h
+        newton.c newton.h)

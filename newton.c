@@ -1,17 +1,14 @@
 #include "discretenewton.h"
 #include <math.h>
 
-#define H (1.0/10000)
-#define BARRIER (1.0/1000000000000000)
+#define BARRIER (1.0/100000000000000000)
 
-bool DiscreteNewton (double (*F) (double), double *x, double a, double b, int *iterations)
+bool Newton (double (*F) (double), double (*dF) (double), double *x, double a, double b, int *iterations)
 {
     *iterations = 0;
-    *x = b;
-
     while (true)
     {
-        double newX = *x - H * F (*x) / (F (*x + H) - F (*x));
+        double newX = *x - F (*x) / dF (*x);
         if (newX < a || newX > b)
         {
             return false;

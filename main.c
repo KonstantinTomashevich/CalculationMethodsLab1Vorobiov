@@ -9,6 +9,7 @@
 #include "powervalue.h"
 #include "bisection.h"
 #include "discretenewton.h"
+#include "newton.h"
 
 #define SEGMENT_COUNT 3
 
@@ -26,15 +27,29 @@ double bisectionResultSegments[SEGMENT_COUNT][2] = {{0, 0}, {0, 0}, {0, 0}};
 
 int bisectionTotalSteps = 0;
 
-double discreteNewtonResultsSum[SEGMENT_COUNT] = {0, 0, 0};
+double discreteNewtonResults[SEGMENT_COUNT] = {0, 0, 0};
 
-int descreteNewtonFailures = 0;
+int discreteNewtonFailures = 0;
 
 int discreteNewtonTotalSteps[SEGMENT_COUNT] = {0, 0, 0};
+
+double newtonResults[SEGMENT_COUNT] = {0, 0, 0};
+
+int newtonFailures = 0;
+
+int newtonTotalSteps[SEGMENT_COUNT] = {0, 0, 0};
 
 double Function (double x)
 {
     return (pow (x, 9) + M_PI) * cos (log (pow (x, 2) + 1)) / exp (pow (x, 2)) - x / 2018;
+}
+
+double FunctionDerivative (double x)
+{
+    return -(2 * pow (M_E, -pow (x, 2)) * (pow (x, 9) + M_PI) * x *
+        sin (log (pow (x, 2) + 1))) / (pow (x, 2) + 1) - 2 *
+        pow (M_E, -pow (x, 2)) * (pow (x, 9) + M_PI) * x * cos (log (pow (x, 2) + 1)) + 9 *
+        pow (M_E, -pow (x, 2)) * pow (x, 8) * cos (log (pow (x, 2) + 1)) - 1.0 / 2018;
 }
 
 void TestPowerMethod (double **A)
@@ -115,10 +130,10 @@ void DoDiscreteNewton (double segments[SEGMENT_COUNT][2])
         double x;
         int iterations;
 
-        if (DescriteNewton (Function, &x, segments[index][0], segments[index][1], &iterations))
+        if (DiscreteNewton (Function, &x, segments[index][0], segments[index][1], &iterations))
         {
             discreteNewtonTotalSteps[index] += iterations;
-            discreteNewtonResultsSum[index] += x;
+            discreteNewtonResults[index] = x;
 
             printf ("Discrete newton result: %20.16lf.\n", x);
             printf ("Discrete newton steps: %d.\n", iterations);
@@ -126,7 +141,31 @@ void DoDiscreteNewton (double segments[SEGMENT_COUNT][2])
         else
         {
             printf ("Discrete newton failed!");
-            descreteNewtonFailures++;
+            discreteNewtonFailures++;
+        }
+    }
+}
+
+void DoNewton (double segments[SEGMENT_COUNT][2])
+{
+    for (int index = 0; index < SEGMENT_COUNT; ++index)
+    {
+        printf ("Segment index: %d.\n", index);
+        double x = discreteNewtonResults[index];
+        int iterations;
+
+        if (Newton (Function, FunctionDerivative, &x, segments[index][0], segments[index][1], &iterations))
+        {
+            newtonTotalSteps[index] += iterations;
+            newtonResults[index] = x;
+
+            printf ("Newton result: %20.16lf.\n", x);
+            printf ("Newton steps: %d.\n", iterations);
+        }
+        else
+        {
+            printf ("Newton failed!");
+            newtonFailures++;
         }
     }
 }
@@ -135,14 +174,8 @@ void MainCycle ()
 {
     double **A = AllocateMatrix (MATRIX_SIZE, MATRIX_SIZE);
     FillDefaultMatrix (A, MATRIX_SIZE, MATRIX_SIZE);
-
     TestPowerMethod (A);
-
     FreeMatrix (A, MATRIX_SIZE, MATRIX_SIZE);
-
-    double segments[SEGMENT_COUNT][2] = {{-2, -1.6}, {-1.4, -1}, {1.7, 2.1}};
-    DoBisections (segments);
-    DoDiscreteNewton (segments);
 }
 
 void PrintReport (FILE *output)
@@ -161,19 +194,31 @@ void PrintReport (FILE *output)
                  bisectionResultSegments[index][0], bisectionResultSegments[index][1]);
     }
 
-    fprintf (output, "    Bisection average steps: %10.7lf.\n", bisectionTotalSteps * 1.0 / RUN_COUNT / SEGMENT_COUNT);
+    fprintf (output, "    Bisection average steps: %10.7lf.\n", bisectionTotalSteps * 1.0 / SEGMENT_COUNT);
 
     fprintf (output, "#3\n");
     for (int index = 0; index < SEGMENT_COUNT; ++index)
     {
-        fprintf (output, "    Discrete newton result segment %d: %20.16lf.\n", index,
-                 discreteNewtonResultsSum[index] / (RUN_COUNT - descreteNewtonFailures));
-        
+        fprintf (output, "    Discrete newton result segment %d: %22.18lf.\n", index,
+                 discreteNewtonResults[index]);
+
         fprintf (output, "    Discrete newton average steps: %10.7lf.\n",
-                discreteNewtonTotalSteps[index] * 1.0 / RUN_COUNT);
+                 discreteNewtonTotalSteps[index] * 1.0 / RUN_COUNT);
     }
 
-    fprintf (output, "    Discrete newton failures: %d.\n", descreteNewtonFailures);
+    fprintf (output, "    Discrete newton failures: %d.\n", discreteNewtonFailures);
+
+    fprintf (output, "#4\n");
+    for (int index = 0; index < SEGMENT_COUNT; ++index)
+    {
+        fprintf (output, "    Newton result segment %d: %22.18lf.\n", index,
+                 discreteNewtonResults[index]);
+
+        fprintf (output, "    Newton average steps: %10.7lf.\n",
+                 discreteNewtonTotalSteps[index] * 1.0 / RUN_COUNT);
+    }
+
+    fprintf (output, "    Newton failures: %d.\n", discreteNewtonFailures);
 }
 
 int main ()
@@ -188,6 +233,10 @@ int main ()
 
         printf ("\n\n");
     }
+
+    double segments[SEGMENT_COUNT][2] = {{-2, -1.6}, {-1.4, -1}, {1.7, 2.1}};
+    DoBisections (segments);
+    DoDiscreteNewton (segments);
 
     PrintReport (stdout);
     FILE *report = fopen ("report.txt", "w");
