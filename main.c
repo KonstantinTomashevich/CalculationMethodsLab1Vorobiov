@@ -199,7 +199,7 @@ void PrintReport (FILE *output)
     fprintf (output, "#3\n");
     for (int index = 0; index < SEGMENT_COUNT; ++index)
     {
-        fprintf (output, "    Discrete newton result segment %d: %22.18lf.\n", index,
+        fprintf (output, "    Discrete newton result segment %d: %22.16lf.\n", index,
                  discreteNewtonResults[index]);
 
         fprintf (output, "    Discrete newton average steps: %10.7lf.\n",
@@ -211,14 +211,11 @@ void PrintReport (FILE *output)
     fprintf (output, "#4\n");
     for (int index = 0; index < SEGMENT_COUNT; ++index)
     {
-        fprintf (output, "    Newton result segment %d: %22.18lf.\n", index,
-                 discreteNewtonResults[index]);
-
-        fprintf (output, "    Newton average steps: %10.7lf.\n",
-                 discreteNewtonTotalSteps[index] * 1.0 / RUN_COUNT);
+        fprintf (output, "    Newton result segment %d: %22.16lf.\n", index, newtonResults[index]);
+        fprintf (output, "    Newton average steps: %10.7lf.\n", newtonTotalSteps[index] * 1.0 / RUN_COUNT);
     }
 
-    fprintf (output, "    Newton failures: %d.\n", discreteNewtonFailures);
+    fprintf (output, "    Newton failures: %d.\n", newtonFailures);
 }
 
 int main ()
@@ -237,6 +234,7 @@ int main ()
     double segments[SEGMENT_COUNT][2] = {{-2, -1.6}, {-1.4, -1}, {1.7, 2.1}};
     DoBisections (segments);
     DoDiscreteNewton (segments);
+    DoNewton (segments);
 
     PrintReport (stdout);
     FILE *report = fopen ("report.txt", "w");
