@@ -7,6 +7,9 @@
 #include "mtwister.h"
 #include "matrixutils.h"
 #include "powervalue.h"
+#include "bisection.h"
+
+#define SEGMENT_COUNT 3
 
 extern MTRand *GlobalRand;
 
@@ -16,7 +19,18 @@ double powerMaxNorm = 0.0;
 
 double powerAverageNorm = 0.0;
 
-clock_t powerTotalTime;
+clock_t powerTotalTime = 0;
+
+double bisectionResultSegments[SEGMENT_COUNT][2] = {{0, 0}, {0, 0}, {0, 0}};
+
+clock_t bisectionTotalTime = 0;
+
+int bisectionTotalSteps = 0;
+
+double Function (double x)
+{
+    return (pow (x, 9) + M_PI) * cos (log (pow (x, 2) + 1)) / exp (pow (x, 2)) - x / 2018;
+}
 
 void TestPowerMethod (double **A)
 {
@@ -71,6 +85,25 @@ void TestPowerMethod (double **A)
     powerAverageNorm += normal / RUN_COUNT;
 }
 
+void DoBisections (double segments[SEGMENT_COUNT][2])
+{
+    for (int index = 0; index < SEGMENT_COUNT; ++index)
+    {
+        printf ("Segment index: %d.\n", index);
+        int iterations;
+        clock_t begin = clock ();
+        Bisection (Function, &(segments[index][0]), &(segments[index][1]), &iterations);
+        bisectionTotalTime += clock () - begin;
+
+        bisectionTotalSteps += iterations;
+        bisectionResultSegments[index][0] += segments[index][0] / RUN_COUNT;
+        bisectionResultSegments[index][1] += segments[index][1] / RUN_COUNT;
+
+        printf ("Bisection result segment: [%7.5lf; %7.5lf],\n", segments[index][0], segments[index][1]);
+        printf ("Bisection steps: %d.\n", iterations);
+    }
+}
+
 void MainCycle ()
 {
     double **A = AllocateMatrix (MATRIX_SIZE, MATRIX_SIZE);
@@ -79,6 +112,9 @@ void MainCycle ()
     TestPowerMethod (A);
 
     FreeMatrix (A, MATRIX_SIZE, MATRIX_SIZE);
+
+    double segments[SEGMENT_COUNT][2] = {{-2, -1.6}, {-1.4, -1}, {1.7, 2.1}};
+    DoBisections (segments);
 }
 
 void PrintReport (FILE *output)
@@ -89,6 +125,17 @@ void PrintReport (FILE *output)
     fprintf (output, "    Power method average error normal: %20.16lf.\n", powerAverageNorm);
     fprintf (output, "    Power method average time: %dms.\n\n",
              (int) (powerTotalTime * CLOCKS_PER_SEC / 1000 / RUN_COUNT / 2));
+
+    fprintf (output, "#2\n");
+    for (int index = 0; index < SEGMENT_COUNT; ++index)
+    {
+        fprintf (output, "    Bisection result segment %d: [%7.5lf; %7.5lf].\n", index,
+                 bisectionResultSegments[index][0], bisectionResultSegments[index][1]);
+    }
+
+    fprintf (output, "    Bisection average steps: %20.16lf.\n", bisectionTotalSteps * 1.0 / RUN_COUNT / SEGMENT_COUNT);
+    fprintf (output, "    Bisection average time: %7.5lfms.\n\n",
+             bisectionTotalTime * 1.0 * CLOCKS_PER_SEC / 1000 / RUN_COUNT / SEGMENT_COUNT);
 }
 
 int main ()
