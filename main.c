@@ -23,8 +23,6 @@ clock_t powerTotalTime = 0;
 
 double bisectionResultSegments[SEGMENT_COUNT][2] = {{0, 0}, {0, 0}, {0, 0}};
 
-clock_t bisectionTotalTime = 0;
-
 int bisectionTotalSteps = 0;
 
 double Function (double x)
@@ -91,9 +89,7 @@ void DoBisections (double segments[SEGMENT_COUNT][2])
     {
         printf ("Segment index: %d.\n", index);
         int iterations;
-        clock_t begin = clock ();
         Bisection (Function, &(segments[index][0]), &(segments[index][1]), &iterations);
-        bisectionTotalTime += clock () - begin;
 
         bisectionTotalSteps += iterations;
         bisectionResultSegments[index][0] += segments[index][0] / RUN_COUNT;
@@ -133,9 +129,7 @@ void PrintReport (FILE *output)
                  bisectionResultSegments[index][0], bisectionResultSegments[index][1]);
     }
 
-    fprintf (output, "    Bisection average steps: %20.16lf.\n", bisectionTotalSteps * 1.0 / RUN_COUNT / SEGMENT_COUNT);
-    fprintf (output, "    Bisection average time: %7.5lfms.\n\n",
-             bisectionTotalTime * 1.0 * CLOCKS_PER_SEC / 1000 / RUN_COUNT / SEGMENT_COUNT);
+    fprintf (output, "    Bisection average steps: %10.7lf.\n", bisectionTotalSteps * 1.0 / RUN_COUNT / SEGMENT_COUNT);
 }
 
 int main ()
