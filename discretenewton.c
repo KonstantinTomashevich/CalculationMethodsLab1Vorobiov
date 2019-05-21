@@ -2,11 +2,11 @@
 #include <math.h>
 
 #define H (1.0/10000)
-#define BARRIER (1.0/10000000000)
+#define BARRIER (1.0/10000000000000000)
 
 bool DiscreteNewton (double (*F) (double), double *x, double a, double b, int *iterations)
 {
-    *iterations = 0;
+    *iterations = 1;
     *x = b;
 
     while (true)
