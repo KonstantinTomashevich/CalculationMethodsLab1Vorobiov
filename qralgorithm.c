@@ -73,7 +73,7 @@ void UndoRotationTransformation (double **A, int matrixSize, int index, double *
     {
         return;
     }
-    
+
     double **copy = CopyMatrix (A, matrixSize, matrixSize);
     for (int row = 0; row < matrixSize; ++row)
     {
