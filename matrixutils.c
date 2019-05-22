@@ -45,12 +45,7 @@ double **AllocateMatrix (int rows, int cols)
 
 double **CopyMatrix (double **matrix, int rows, int cols)
 {
-    double **copy = calloc (rows, sizeof (double *));
-    for (int row = 0; row < rows; ++row)
-    {
-        copy[row] = calloc (cols, sizeof (double));
-    }
-
+    double **copy = AllocateMatrix (rows, cols);
     CopyMatrixInto (matrix, rows, cols, copy);
     return copy;
 }
