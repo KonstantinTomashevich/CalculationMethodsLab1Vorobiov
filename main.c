@@ -10,6 +10,7 @@
 #include "bisection.h"
 #include "discretenewton.h"
 #include "newton.h"
+#include "qralgorithm.h"
 
 #define SEGMENT_COUNT 3
 
@@ -38,6 +39,8 @@ double newtonResults[SEGMENT_COUNT] = {0, 0, 0};
 int newtonFailures = 0;
 
 int newtonTotalSteps[SEGMENT_COUNT] = {0, 0, 0};
+
+clock_t qrTotalTime = 0;
 
 double Function (double x)
 {
@@ -103,6 +106,15 @@ void TestPowerMethod (double **A)
     powerMinNorm = fmin (powerMinNorm, normal);
     powerMaxNorm = fmax (powerMaxNorm, normal);
     powerAverageNorm += normal / RUN_COUNT;
+}
+
+void TestQRAlgorithm (double **A)
+{
+    double **Acopy = CopyMatrix (A, MATRIX_SIZE, MATRIX_SIZE);
+    clock_t begin = clock ();
+    QRAlgorithm (Acopy, MATRIX_SIZE);
+    qrTotalTime += clock () - begin;
+    FreeMatrix (Acopy, MATRIX_SIZE, MATRIX_SIZE);
 }
 
 void DoBisections (double segments[SEGMENT_COUNT][2])
@@ -175,6 +187,7 @@ void MainCycle ()
     double **A = AllocateMatrix (MATRIX_SIZE, MATRIX_SIZE);
     FillDefaultMatrix (A, MATRIX_SIZE, MATRIX_SIZE);
     TestPowerMethod (A);
+    TestQRAlgorithm (A);
     FreeMatrix (A, MATRIX_SIZE, MATRIX_SIZE);
 }
 
@@ -188,6 +201,10 @@ void PrintReport (FILE *output)
              (int) (powerTotalTime * CLOCKS_PER_SEC / 1000 / RUN_COUNT / 2));
 
     fprintf (output, "#2\n");
+    fprintf (output, "    QR algorithm average time (with max 10^4 steps): %dms.\n\n",
+             (int) (qrTotalTime* CLOCKS_PER_SEC / 1000 / RUN_COUNT));
+
+    fprintf (output, "#3\n");
     for (int index = 0; index < SEGMENT_COUNT; ++index)
     {
         fprintf (output, "    Bisection result segment %d: [%20.16f; %20.16lf].\n", index,
@@ -196,7 +213,7 @@ void PrintReport (FILE *output)
 
     fprintf (output, "    Bisection steps: %d.\n", bisectionTotalSteps / SEGMENT_COUNT);
 
-    fprintf (output, "#3\n");
+    fprintf (output, "#4\n");
     for (int index = 0; index < SEGMENT_COUNT; ++index)
     {
         fprintf (output, "    Discrete newton result segment %d: %22.16lf.\n", index,
@@ -206,7 +223,7 @@ void PrintReport (FILE *output)
 
     fprintf (output, "    Discrete newton failures: %d.\n", discreteNewtonFailures);
 
-    fprintf (output, "#4\n");
+    fprintf (output, "#5\n");
     for (int index = 0; index < SEGMENT_COUNT; ++index)
     {
         fprintf (output, "    Newton result segment %d: %22.16lf.\n", index, newtonResults[index]);

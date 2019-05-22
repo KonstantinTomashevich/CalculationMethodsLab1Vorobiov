@@ -9,4 +9,5 @@ add_executable(Lab2 main.c def.h
         powervalue.c powervalue.h
         bisection.c bisection.h
         discretenewton.c discretenewton.h
-        newton.c newton.h)
+        newton.c newton.h
+        qralgorithm.c qralgorithm.h)
