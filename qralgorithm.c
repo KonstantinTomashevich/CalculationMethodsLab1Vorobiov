@@ -6,6 +6,8 @@
 #include <stdlib.h>
 
 #define BARRIER 0.001
+#define DEFLATION_BARRIER (1.0/10000000000000)
+#define INCORRECT_ROTATION -2
 
 void SimilarTransformation (double **A, int row, int col, int matrixSize)
 {
@@ -17,6 +19,14 @@ void RotationTransformation (double **A, int matrixSize, int index, double *undo
 {
     double a = A[index][index];
     double b = A[index + 1][index];
+
+    if (fabs (b) < DEFLATION_BARRIER)
+    {
+        undoBuffer[index * 2] = INCORRECT_ROTATION;
+        undoBuffer[index * 2 + 1] = INCORRECT_ROTATION;
+        return;
+    }
+
     double y = sqrt (a * a + b * b) / (a + b * b / a);
     double x = b * y / a;
 
@@ -58,6 +68,11 @@ void UndoRotationTransformation (double **A, int matrixSize, int index, double *
 {
     double x = undoBuffer[index * 2];
     double y = undoBuffer[index * 2 + 1];
+
+    if (x == INCORRECT_ROTATION || y == INCORRECT_ROTATION)
+    {
+        return;
+    }
 
     double **rotator = AllocateMatrix (matrixSize, matrixSize);
     for (int diag = 0; diag < matrixSize; ++diag)
