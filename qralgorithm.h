@@ -1,2 +1,2 @@
 #pragma once
-void QRAlgorithm (double **A, int matrixSize);
+int QRAlgorithm (double **A, int matrixSize);

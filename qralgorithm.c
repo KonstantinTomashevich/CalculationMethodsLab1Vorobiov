@@ -100,7 +100,7 @@ void UndoRotationTransformation (double **A, int matrixSize, int index, double *
     FreeMatrix (copy, matrixSize, matrixSize);
 }
 
-void QRAlgorithm (double **A, int matrixSize)
+int QRAlgorithm (double **A, int matrixSize)
 {
     for (int row = matrixSize - 1; row >= 2; --row)
     {
@@ -163,4 +163,5 @@ void QRAlgorithm (double **A, int matrixSize)
     }
 
     free (previousDiag);
+    return iteration;
 }

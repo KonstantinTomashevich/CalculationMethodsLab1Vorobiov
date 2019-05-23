@@ -42,6 +42,8 @@ int newtonTotalSteps[SEGMENT_COUNT] = {0, 0, 0};
 
 clock_t qrTotalTime = 0;
 
+int qrTotalIterations = 0;
+
 double Function (double x)
 {
     return (pow (x, 9) + M_PI) * cos (log (pow (x, 2) + 1)) / exp (pow (x, 2)) - x / 2018;
@@ -112,7 +114,7 @@ void TestQRAlgorithm (double **A)
 {
     double **Acopy = CopyMatrix (A, MATRIX_SIZE, MATRIX_SIZE);
     clock_t begin = clock ();
-    QRAlgorithm (Acopy, MATRIX_SIZE);
+    qrTotalIterations += QRAlgorithm (Acopy, MATRIX_SIZE);
     qrTotalTime += clock () - begin;
     FreeMatrix (Acopy, MATRIX_SIZE, MATRIX_SIZE);
 }
@@ -201,8 +203,9 @@ void PrintReport (FILE *output)
              (int) (powerTotalTime * CLOCKS_PER_SEC / 1000 / RUN_COUNT / 2));
 
     fprintf (output, "#2\n");
-    fprintf (output, "    QR algorithm average time (with max 10^3 steps): %dms.\n\n",
-             (int) (qrTotalTime* CLOCKS_PER_SEC / 1000 / RUN_COUNT));
+    fprintf (output, "    QR algorithm average iterations (with max 10^3): %d.\n", qrTotalIterations / RUN_COUNT);
+    fprintf (output, "    QR algorithm average time (with max 10^3 iterations): %dms.\n\n",
+             (int) (qrTotalTime * CLOCKS_PER_SEC / 1000 / RUN_COUNT));
 
     fprintf (output, "#3\n");
     for (int index = 0; index < SEGMENT_COUNT; ++index)
