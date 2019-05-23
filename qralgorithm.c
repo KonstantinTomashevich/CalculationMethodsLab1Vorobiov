@@ -5,8 +5,8 @@
 #include <math.h>
 #include <stdlib.h>
 
-#define BARRIER 0.001
-#define DEFLATION_BARRIER (1.0/10000000000000)
+#define BARRIER (1.0/10000)
+#define DEFLATION_BARRIER (1.0/1000000000000)
 #define INCORRECT_ROTATION -2
 
 void SimilarTransformation (double **A, int row, int col, int matrixSize)
@@ -111,10 +111,10 @@ void QRAlgorithm (double **A, int matrixSize)
     }
 
     int iteration = 0;
-    double previousNormal = 0.0;
     double *rotationsBuffer = calloc ((matrixSize - 1) * 2, sizeof (double));
+    double *previousDiag = calloc (matrixSize, sizeof (double));
 
-    while (iteration < 1000)
+    while (iteration < 10000)
     {
         for (int index = 0; index < matrixSize - 1; ++index)
         {
@@ -126,24 +126,41 @@ void QRAlgorithm (double **A, int matrixSize)
             UndoRotationTransformation (A, matrixSize, index, rotationsBuffer);
         }
 
-        double normal = 0.0;
+        int found = 0;
+        int complex = 0;
+
+        for (int testIndex = 0; testIndex < matrixSize; ++testIndex)
+        {
+            if (testIndex + 1 < matrixSize && fabs(A[testIndex + 1][testIndex]) > DEFLATION_BARRIER)
+            {
+                found += 2;
+                complex += 2;
+                ++testIndex;
+                continue;
+            }
+
+            for (int searchIndex = 0; searchIndex < matrixSize; ++searchIndex)
+            {
+                if (fabs (A[testIndex][testIndex] - previousDiag[searchIndex]) < BARRIER)
+                {
+                    found++;
+                    break;
+                }
+            }
+        }
+
+        if (found == matrixSize && found - complex > 0)
+        {
+            break;
+        }
+
         for (int index = 0; index < matrixSize; ++index)
         {
-            normal += pow (A[index][index], 2);
+            previousDiag[index] = A[index][index];
         }
 
-        normal = sqrt (normal);
-        if (iteration > 0 && fabs (normal - previousNormal) < BARRIER)
-        {
-            //break;
-        }
-
-        previousNormal = normal;
         ++iteration;
     }
 
-    for (int index = 0; index < matrixSize; ++index)
-    {
-        printf ("%20.16lf\n", A[index][index]);
-    }
+    free (previousDiag);
 }
