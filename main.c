@@ -236,7 +236,7 @@ void PrintReport (FILE *output)
 int main ()
 {
     GlobalRand = malloc (sizeof (MTRand));
-    *GlobalRand = SeedRand (1377);
+    *GlobalRand = SeedRand (1492);
 
     for (int index = 0; index < RUN_COUNT; ++index)
     {

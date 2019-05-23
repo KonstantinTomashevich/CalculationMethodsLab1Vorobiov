@@ -40,22 +40,19 @@ void RotationTransformation (double **A, int matrixSize, int index, double *undo
         for (int col = 0; col < matrixSize; ++col)
         {
             double value = 0.0;
-            for (int iterator = 0; iterator < matrixSize; ++iterator)
+            if (row == index)
             {
-                double firstValue;
-                if ((row == index && iterator == index) ||
-                    (row == index + 1 && iterator == index + 1))
-                { firstValue = y; }
-                else if (row == index && iterator == index + 1)
-                { firstValue = x; }
-                else if (row == index + 1 && iterator == index)
-                { firstValue = -x; }
-                else if (row == iterator)
-                { firstValue = 1.0; }
-                else
-                { firstValue = 0.0; }
-
-                value += firstValue * copy[iterator][col];
+                value += y * copy[index][col];
+                value += x * copy[index + 1][col];
+            }
+            else if (row == index + 1)
+            {
+                value -= x * copy[index][col];
+                value += y * copy[index + 1][col];
+            }
+            else
+            {
+                value = copy[row][col];
             }
 
             A[row][col] = value;
@@ -81,22 +78,19 @@ void UndoRotationTransformation (double **A, int matrixSize, int index, double *
         for (int col = 0; col < matrixSize; ++col)
         {
             double value = 0.0;
-            for (int iterator = 0; iterator < matrixSize; ++iterator)
+            if (col == index)
             {
-                double secondValue;
-                if ((iterator == index && col == index) ||
-                    (iterator == index + 1 && col == index + 1))
-                { secondValue = y; }
-                else if (iterator == index && col == index + 1)
-                { secondValue = -x; }
-                else if (iterator == index + 1 && col == index)
-                { secondValue = x; }
-                else if (iterator == col)
-                { secondValue = 1.0; }
-                else
-                { secondValue = 0.0; }
-
-                value += copy[row][iterator] * secondValue;
+                value += copy[row][index] * y;
+                value += copy[row][index + 1] * x;
+            }
+            else if (col == index + 1)
+            {
+                value -= copy[row][index] * x;
+                value += copy[row][index + 1] * y;
+            }
+            else
+            {
+                value = copy[row][col];
             }
 
             A[row][col] = value;
