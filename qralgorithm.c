@@ -11,8 +11,9 @@
 
 void SimilarTransformation (double **A, int row, int col, int matrixSize)
 {
-    AddMultipliedCol (A, matrixSize, matrixSize, col, row - 1, -A[row][col] / A[row][row - 1]);
-    AddMultipliedRow (A, matrixSize, matrixSize, row - 1, col, A[row][col] / A[row][row - 1]);
+    double modifier = A[row][col] / A[row][row - 1];
+    AddMultipliedCol (A, matrixSize, matrixSize, col, row - 1, -modifier);
+    AddMultipliedRow (A, matrixSize, matrixSize, row - 1, col, modifier);
 }
 
 void RotationTransformation (double **A, int matrixSize, int index, double *undoBuffer)
@@ -119,7 +120,7 @@ void QRAlgorithm (double **A, int matrixSize)
     double previousNormal = 0.0;
     double *rotationsBuffer = calloc ((matrixSize - 1) * 2, sizeof (double));
 
-    while (iteration < pow (matrixSize, 4))
+    while (iteration < 1000)
     {
         for (int index = 0; index < matrixSize - 1; ++index)
         {
@@ -140,10 +141,15 @@ void QRAlgorithm (double **A, int matrixSize)
         normal = sqrt (normal);
         if (iteration > 0 && fabs (normal - previousNormal) < BARRIER)
         {
-            break;
+            //break;
         }
 
         previousNormal = normal;
         ++iteration;
+    }
+
+    for (int index = 0; index < matrixSize; ++index)
+    {
+        printf ("%20.16lf\n", A[index][index]);
     }
 }
