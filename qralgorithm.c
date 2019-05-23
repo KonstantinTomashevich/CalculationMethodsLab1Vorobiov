@@ -114,7 +114,7 @@ void QRAlgorithm (double **A, int matrixSize)
     double *rotationsBuffer = calloc ((matrixSize - 1) * 2, sizeof (double));
     double *previousDiag = calloc (matrixSize, sizeof (double));
 
-    while (iteration < 10000)
+    while (iteration < pow (matrixSize, 3))
     {
         for (int index = 0; index < matrixSize - 1; ++index)
         {

@@ -201,7 +201,7 @@ void PrintReport (FILE *output)
              (int) (powerTotalTime * CLOCKS_PER_SEC / 1000 / RUN_COUNT / 2));
 
     fprintf (output, "#2\n");
-    fprintf (output, "    QR algorithm average time (with max 10^4 steps): %dms.\n\n",
+    fprintf (output, "    QR algorithm average time (with max 10^3 steps): %dms.\n\n",
              (int) (qrTotalTime* CLOCKS_PER_SEC / 1000 / RUN_COUNT));
 
     fprintf (output, "#3\n");
