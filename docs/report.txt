@@ -1,0 +1,31 @@
+#1
+    Power method min error normal:   0.0000000000000003.
+    Power method max error normal:  75.6064786021455150.
+    Power method average error normal:  11.3263001962471800.
+    Power method average time: 9ms.
+
+#2
+    QR algorithm average iterations: 1918.
+    QR algorithm average time: 25ms.
+
+#3
+    Bisection result segment 0: [ -1.9519531250000002;  -1.9518554687500003].
+    Bisection result segment 1: [ -1.1358398437499999;  -1.1357421874999998].
+    Bisection result segment 2: [  1.9518554687500003;   1.9519531250000002].
+    Bisection steps: 12.
+#4
+    Discrete newton result segment 0:    -1.9519125752999189.
+    Discrete newton steps: 5.
+    Discrete newton result segment 1:    -1.1357567044695389.
+    Discrete newton steps: 4.
+    Discrete newton result segment 2:     1.9519145740760813.
+    Discrete newton steps: 5.
+    Discrete newton failures: 0.
+#5
+    Newton result segment 0:    -1.9519125752999189.
+    Newton steps: 4.
+    Newton result segment 1:    -1.1357567044695389.
+    Newton steps: 3.
+    Newton result segment 2:     1.9519145740760813.
+    Newton steps: 3.
+    Newton failures: 0.

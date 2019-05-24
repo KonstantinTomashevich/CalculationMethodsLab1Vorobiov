@@ -1,4 +1,4 @@
 #pragma once
 #define MATRIX_SIZE 10
 #define N 7
-#define RUN_COUNT 1000
+#define RUN_COUNT 10000
