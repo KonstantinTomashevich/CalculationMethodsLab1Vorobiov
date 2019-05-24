@@ -6,7 +6,7 @@
 #include <stdlib.h>
 
 #define BARRIER (1.0/10000)
-#define DEFLATION_BARRIER (1.0/1000000000000)
+#define DEFLATION_BARRIER (1.0/1000000000)
 #define INCORRECT_ROTATION -2
 
 void SimilarTransformation (double **A, int row, int col, int matrixSize)
@@ -112,9 +112,10 @@ int QRAlgorithm (double **A, int matrixSize)
 
     int iteration = 0;
     double *rotationsBuffer = calloc ((matrixSize - 1) * 2, sizeof (double));
-    double *previousDiag = calloc (matrixSize, sizeof (double));
+    double *previousValues = calloc (matrixSize * 2, sizeof (double));
+    double *currentValues = calloc (matrixSize * 2, sizeof (double));
 
-    while (iteration < pow (matrixSize, 3))
+    while (1)
     {
         for (int index = 0; index < matrixSize - 1; ++index)
         {
@@ -126,42 +127,74 @@ int QRAlgorithm (double **A, int matrixSize)
             UndoRotationTransformation (A, matrixSize, index, rotationsBuffer);
         }
 
-        int found = 0;
-        int complex = 0;
-
-        for (int testIndex = 0; testIndex < matrixSize; ++testIndex)
+        int checkIndex = 0;
+        while (checkIndex < matrixSize)
         {
-            if (testIndex + 1 < matrixSize && fabs(A[testIndex + 1][testIndex]) > DEFLATION_BARRIER)
-            {
-                found += 2;
-                complex += 2;
-                ++testIndex;
-                continue;
-            }
+            double realValue;
+            double complexValue;
 
-            for (int searchIndex = 0; searchIndex < matrixSize; ++searchIndex)
+            if (checkIndex < matrixSize - 1 && fabs (A[checkIndex + 1][checkIndex]) > DEFLATION_BARRIER)
             {
-                if (fabs (A[testIndex][testIndex] - previousDiag[searchIndex]) < BARRIER)
-                {
-                    found++;
-                    break;
-                }
+                realValue = (A[checkIndex][checkIndex] + A[checkIndex + 1][checkIndex + 1]) / 2;
+                complexValue = sqrt (fabs (
+                    pow (A[checkIndex][checkIndex] - A[checkIndex + 1][checkIndex + 1], 2) +
+                        4 * A[checkIndex][checkIndex + 1] * A[checkIndex + 1][checkIndex])) / 2;
+
+                currentValues[checkIndex * 2] = realValue;
+                currentValues[checkIndex * 2 + 1] = complexValue;
+                ++checkIndex;
+
+                currentValues[checkIndex * 2] = realValue;
+                currentValues[checkIndex * 2 + 1] = -complexValue;
+                ++checkIndex;
+            }
+            else
+            {
+                realValue = A[checkIndex][checkIndex];
+                complexValue = 0.0;
+
+                currentValues[checkIndex * 2] = realValue;
+                currentValues[checkIndex * 2 + 1] = complexValue;
+                ++checkIndex;
             }
         }
 
-        if (found == matrixSize && found - complex > 0)
+        int found = 0;
+        for (int testIndex = 0; testIndex < matrixSize; ++testIndex)
+        {
+            double real = currentValues[testIndex * 2];
+            double complex = currentValues[testIndex * 2 + 1];
+
+            for (int searchIndex = 0; searchIndex < matrixSize; ++searchIndex)
+            {
+                if (fabs (real - previousValues[searchIndex * 2]) < BARRIER &&
+                    fabs (complex - previousValues[searchIndex * 2 + 1]) < BARRIER)
+                {
+                    ++found;
+                    break;
+                }
+            }
+
+            if (found <= testIndex)
+            {
+                break;
+            }
+        }
+
+        if (found == matrixSize)
         {
             break;
         }
 
-        for (int index = 0; index < matrixSize; ++index)
+        for (int index = 0; index < matrixSize * 2; ++index)
         {
-            previousDiag[index] = A[index][index];
+            previousValues[index] = currentValues[index];
         }
 
         ++iteration;
     }
 
-    free (previousDiag);
+    free (previousValues);
+    free (currentValues);
     return iteration;
 }

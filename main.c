@@ -203,8 +203,8 @@ void PrintReport (FILE *output)
              (int) (powerTotalTime * CLOCKS_PER_SEC / 1000 / RUN_COUNT / 2));
 
     fprintf (output, "#2\n");
-    fprintf (output, "    QR algorithm average iterations (with max 10^3): %d.\n", qrTotalIterations / RUN_COUNT);
-    fprintf (output, "    QR algorithm average time (with max 10^3 iterations): %dms.\n\n",
+    fprintf (output, "    QR algorithm average iterations: %d.\n", qrTotalIterations / RUN_COUNT);
+    fprintf (output, "    QR algorithm average time: %dms.\n\n",
              (int) (qrTotalTime * CLOCKS_PER_SEC / 1000 / RUN_COUNT));
 
     fprintf (output, "#3\n");
@@ -239,7 +239,7 @@ void PrintReport (FILE *output)
 int main ()
 {
     GlobalRand = malloc (sizeof (MTRand));
-    *GlobalRand = SeedRand (1492);
+    *GlobalRand = SeedRand (1377);
 
     for (int index = 0; index < RUN_COUNT; ++index)
     {
