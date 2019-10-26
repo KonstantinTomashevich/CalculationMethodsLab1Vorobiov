@@ -4,22 +4,16 @@
 #include <time.h>
 
 #include "def.h"
-#include "mtwister.h"
 #include "bisection.h"
 #include "discretenewton.h"
 #include "newton.h"
+#include "differentialinterpolation.h"
 
 #define SEGMENT_COUNT 3
 
-extern MTRand *GlobalRand;
+#define INTERPOLATION_NODE_SET_COUNT 3
 
-double powerMinNorm = INFINITY;
-
-double powerMaxNorm = 0.0;
-
-double powerAverageNorm = 0.0;
-
-clock_t powerTotalTime = 0;
+int interpolationNodeSet[INTERPOLATION_NODE_SET_COUNT] = {6, 12, 18};
 
 double bisectionResultSegments[SEGMENT_COUNT][2] = {{0, 0}, {0, 0}, {0, 0}};
 
@@ -37,9 +31,7 @@ int newtonFailures = 0;
 
 int newtonTotalSteps[SEGMENT_COUNT] = {0, 0, 0};
 
-clock_t qrTotalTime = 0;
-
-int qrTotalIterations = 0;
+double *differentialInterpolationResults[INTERPOLATION_NODE_SET_COUNT];
 
 double Function (double x)
 {
@@ -56,9 +48,10 @@ double FunctionDerivative (double x)
 
 void DoBisections (double segments[SEGMENT_COUNT][2])
 {
+    printf ("Bisections solver.\n");
     for (int index = 0; index < SEGMENT_COUNT; ++index)
     {
-        printf ("Segment index: %d.\n", index);
+        printf ("    Segment index: %d.\n", index);
         int iterations;
         Bisection (Function, &(segments[index][0]), &(segments[index][1]), &iterations);
 
@@ -66,16 +59,17 @@ void DoBisections (double segments[SEGMENT_COUNT][2])
         bisectionResultSegments[index][0] = segments[index][0];
         bisectionResultSegments[index][1] = segments[index][1];
 
-        printf ("Bisection result segment: [%20.16lf; %20.16lf],\n", segments[index][0], segments[index][1]);
-        printf ("Bisection steps: %d.\n", iterations);
+        printf ("        Bisection result segment: [%20.16lf; %20.16lf],\n", segments[index][0], segments[index][1]);
+        printf ("        Bisection steps: %d.\n", iterations);
     }
 }
 
 void DoDiscreteNewton (double segments[SEGMENT_COUNT][2])
 {
+    printf ("Discrete Newton solver.\n");
     for (int index = 0; index < SEGMENT_COUNT; ++index)
     {
-        printf ("Segment index: %d.\n", index);
+        printf ("    Segment index: %d.\n", index);
         double x;
         int iterations;
 
@@ -84,12 +78,12 @@ void DoDiscreteNewton (double segments[SEGMENT_COUNT][2])
             discreteNewtonTotalSteps[index] += iterations;
             discreteNewtonResults[index] = x;
 
-            printf ("Discrete newton result: %20.16lf.\n", x);
-            printf ("Discrete newton steps: %d.\n", iterations);
+            printf ("        Discrete newton result: %20.16lf.\n", x);
+            printf ("        Discrete newton steps: %d.\n", iterations);
         }
         else
         {
-            printf ("Discrete newton failed!");
+            printf ("        Discrete newton failed!");
             discreteNewtonFailures++;
         }
     }
@@ -97,9 +91,10 @@ void DoDiscreteNewton (double segments[SEGMENT_COUNT][2])
 
 void DoNewton (double segments[SEGMENT_COUNT][2])
 {
+    printf ("Newton solver.\n");
     for (int index = 0; index < SEGMENT_COUNT; ++index)
     {
-        printf ("Segment index: %d.\n", index);
+        printf ("    Segment index: %d.\n", index);
         double x = segments[index][1];
         int iterations;
 
@@ -108,13 +103,29 @@ void DoNewton (double segments[SEGMENT_COUNT][2])
             newtonTotalSteps[index] += iterations;
             newtonResults[index] = x;
 
-            printf ("Newton result: %20.16lf.\n", x);
-            printf ("Newton steps: %d.\n", iterations);
+            printf ("        Newton result: %20.16lf.\n", x);
+            printf ("        Newton steps: %d.\n", iterations);
         }
         else
         {
-            printf ("Newton failed!");
+            printf ("        Newton failed!\n");
             newtonFailures++;
+        }
+    }
+}
+
+void DoDifferentialInterpolation()
+{
+    printf ("Differential interpolation.\n");
+    for (int nodeSetIndex = 0; nodeSetIndex < INTERPOLATION_NODE_SET_COUNT; ++nodeSetIndex)
+    {
+        DifferentialInterpolation (Function, -4, 4, interpolationNodeSet[nodeSetIndex],
+            differentialInterpolationResults + nodeSetIndex);
+
+        printf ("    Result coefficients for %d nodes.\n", interpolationNodeSet[nodeSetIndex]);
+        for (int index = 0; index < interpolationNodeSet[nodeSetIndex]; ++index)
+        {
+            printf ("        # a%d = %lf\n", index, differentialInterpolationResults[nodeSetIndex][index]);
         }
     }
 }
@@ -152,19 +163,15 @@ void PrintReport (FILE *output)
 
 int main ()
 {
-    GlobalRand = malloc (sizeof (MTRand));
-    *GlobalRand = SeedRand (1377);
-
     double segments[SEGMENT_COUNT][2] = {{-2, -1.6}, {-1.4, -1}, {1.7, 2.1}};
     DoBisections (segments);
     DoDiscreteNewton (segments);
     DoNewton (segments);
+    DoDifferentialInterpolation ();
 
     PrintReport (stdout);
     FILE *report = fopen ("report.txt", "w");
     PrintReport (report);
     fclose (report);
-
-    free (GlobalRand);
     return 0;
 }
