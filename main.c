@@ -5,7 +5,6 @@
 
 #include "def.h"
 #include "mtwister.h"
-#include "matrixutils.h"
 #include "bisection.h"
 #include "discretenewton.h"
 #include "newton.h"

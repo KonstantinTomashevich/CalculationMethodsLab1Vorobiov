@@ -4,8 +4,8 @@ project(Lab1Vorobiov C)
 set(CMAKE_C_STANDARD 11)
 
 add_executable(Lab2 main.c def.h
-        matrixutils.c matrixutils.h
         mtwister.c mtwister.h
         bisection.c bisection.h
         discretenewton.c discretenewton.h
-        newton.c newton.h)
+        newton.c newton.h
+        deffirentialinterpolation.c deffirentialinterpolation.h)
