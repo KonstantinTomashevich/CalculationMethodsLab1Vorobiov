@@ -6,11 +6,9 @@
 #include "def.h"
 #include "mtwister.h"
 #include "matrixutils.h"
-#include "powervalue.h"
 #include "bisection.h"
 #include "discretenewton.h"
 #include "newton.h"
-#include "qralgorithm.h"
 
 #define SEGMENT_COUNT 3
 
@@ -46,7 +44,7 @@ int qrTotalIterations = 0;
 
 double Function (double x)
 {
-    return (pow (x, 9) + M_PI) * cos (log (pow (x, 2) + 1)) / exp (pow (x, 2)) - x / 2018;
+    return (pow (x, 9) + M_PI) * cos (log (pow (x, 2) + 1)) / exp (pow (x, 2)) - x / 2019;
 }
 
 double FunctionDerivative (double x)
@@ -54,69 +52,7 @@ double FunctionDerivative (double x)
     return -(2 * pow (M_E, -pow (x, 2)) * (pow (x, 9) + M_PI) * x *
         sin (log (pow (x, 2) + 1))) / (pow (x, 2) + 1) - 2 *
         pow (M_E, -pow (x, 2)) * (pow (x, 9) + M_PI) * x * cos (log (pow (x, 2) + 1)) + 9 *
-        pow (M_E, -pow (x, 2)) * pow (x, 8) * cos (log (pow (x, 2) + 1)) - 1.0 / 2018;
-}
-
-void TestPowerMethod (double **A)
-{
-    double **myA = CopyMatrix (A, MATRIX_SIZE, MATRIX_SIZE);
-    double **vector;
-    double **multiplicationResult = AllocateMatrix (MATRIX_SIZE, 1);
-
-    clock_t begin = clock ();
-    double value = PowerValue (myA, MATRIX_SIZE, &vector);
-    powerTotalTime += clock () - begin;
-
-    MultiplyMatrices (myA, vector, multiplicationResult, MATRIX_SIZE, MATRIX_SIZE, 1);
-    double normal = 0.0;
-
-    for (int index = 0; index < MATRIX_SIZE; ++index)
-    {
-        normal += pow (vector[index][0] * value - multiplicationResult[index][0], 2);
-    }
-
-    normal = sqrt (normal);
-    printf ("Power method first value: %20.16lf.\n", value);
-    printf ("Power method first value search error: %20.16lf.\n", normal);
-
-    powerMinNorm = fmin (powerMinNorm, normal);
-    powerMaxNorm = fmax (powerMaxNorm, normal);
-    powerAverageNorm += normal / RUN_COUNT;
-
-    double **myB = CopyMatrix (myA, MATRIX_SIZE, MATRIX_SIZE);
-    for (int index = 0; index < MATRIX_SIZE; ++index)
-    {
-        myB[index][index] -= value;
-    }
-
-    begin = clock ();
-    double secondValue = PowerValue (myB, MATRIX_SIZE, &vector) + value;
-    powerTotalTime += clock () - begin;
-
-    MultiplyMatrices (myA, vector, multiplicationResult, MATRIX_SIZE, MATRIX_SIZE, 1);
-    normal = 0.0;
-
-    for (int index = 0; index < MATRIX_SIZE; ++index)
-    {
-        normal += pow (vector[index][0] * secondValue - multiplicationResult[index][0], 2);
-    }
-
-    normal = sqrt (normal);
-    printf ("Power method second value: %20.16lf.\n", secondValue);
-    printf ("Power method second value search error: %20.16lf.\n", normal);
-
-    powerMinNorm = fmin (powerMinNorm, normal);
-    powerMaxNorm = fmax (powerMaxNorm, normal);
-    powerAverageNorm += normal / RUN_COUNT;
-}
-
-void TestQRAlgorithm (double **A)
-{
-    double **Acopy = CopyMatrix (A, MATRIX_SIZE, MATRIX_SIZE);
-    clock_t begin = clock ();
-    qrTotalIterations += QRAlgorithm (Acopy, MATRIX_SIZE);
-    qrTotalTime += clock () - begin;
-    FreeMatrix (Acopy, MATRIX_SIZE, MATRIX_SIZE);
+        pow (M_E, -pow (x, 2)) * pow (x, 8) * cos (log (pow (x, 2) + 1)) - 1.0 / 2019;
 }
 
 void DoBisections (double segments[SEGMENT_COUNT][2])
@@ -184,30 +120,9 @@ void DoNewton (double segments[SEGMENT_COUNT][2])
     }
 }
 
-void MainCycle ()
-{
-    double **A = AllocateMatrix (MATRIX_SIZE, MATRIX_SIZE);
-    FillDefaultMatrix (A, MATRIX_SIZE, MATRIX_SIZE);
-    TestPowerMethod (A);
-    TestQRAlgorithm (A);
-    FreeMatrix (A, MATRIX_SIZE, MATRIX_SIZE);
-}
-
 void PrintReport (FILE *output)
 {
     fprintf (output, "#1\n");
-    fprintf (output, "    Power method min error normal: %20.16lf.\n", powerMinNorm);
-    fprintf (output, "    Power method max error normal: %20.16lf.\n", powerMaxNorm);
-    fprintf (output, "    Power method average error normal: %20.16lf.\n", powerAverageNorm);
-    fprintf (output, "    Power method average time: %dms.\n\n",
-             (int) (powerTotalTime * CLOCKS_PER_SEC / 1000 / RUN_COUNT / 2));
-
-    fprintf (output, "#2\n");
-    fprintf (output, "    QR algorithm average iterations: %d.\n", qrTotalIterations / RUN_COUNT);
-    fprintf (output, "    QR algorithm average time: %dms.\n\n",
-             (int) (qrTotalTime * CLOCKS_PER_SEC / 1000 / RUN_COUNT));
-
-    fprintf (output, "#3\n");
     for (int index = 0; index < SEGMENT_COUNT; ++index)
     {
         fprintf (output, "    Bisection result segment %d: [%20.16f; %20.16lf].\n", index,
@@ -216,7 +131,7 @@ void PrintReport (FILE *output)
 
     fprintf (output, "    Bisection steps: %d.\n", bisectionTotalSteps / SEGMENT_COUNT);
 
-    fprintf (output, "#4\n");
+    fprintf (output, "#2\n");
     for (int index = 0; index < SEGMENT_COUNT; ++index)
     {
         fprintf (output, "    Discrete newton result segment %d: %22.16lf.\n", index,
@@ -226,7 +141,7 @@ void PrintReport (FILE *output)
 
     fprintf (output, "    Discrete newton failures: %d.\n", discreteNewtonFailures);
 
-    fprintf (output, "#5\n");
+    fprintf (output, "#3\n");
     for (int index = 0; index < SEGMENT_COUNT; ++index)
     {
         fprintf (output, "    Newton result segment %d: %22.16lf.\n", index, newtonResults[index]);
@@ -240,14 +155,6 @@ int main ()
 {
     GlobalRand = malloc (sizeof (MTRand));
     *GlobalRand = SeedRand (1377);
-
-    for (int index = 0; index < RUN_COUNT; ++index)
-    {
-        printf ("### Run %d ### \n", index);
-        MainCycle ();
-
-        printf ("\n\n");
-    }
 
     double segments[SEGMENT_COUNT][2] = {{-2, -1.6}, {-1.4, -1}, {1.7, 2.1}};
     DoBisections (segments);

@@ -1,7 +1,7 @@
 #include "discretenewton.h"
 #include <math.h>
 
-#define BARRIER (1.0/10000000000000000)
+#define BARRIER (3.0/10000000000000000)
 
 bool Newton (double (*F) (double), double (*dF) (double), double *x, double a, double b, int *iterations)
 {
