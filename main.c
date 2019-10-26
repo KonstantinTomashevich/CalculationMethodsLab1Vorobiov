@@ -127,7 +127,7 @@ void DoDifferentialInterpolation()
         {
             double *result;
             time_t begin = clock ();
-            DifferentialInterpolation (Function, -4, 4, interpolationNodeSet[nodeSetIndex], &result);
+            DifferentialInterpolation (Function, -4, 4, NULL, interpolationNodeSet[nodeSetIndex], &result);
             totalTime += clock () - begin;
 
             if (nodeSetIndex <= INTERPOLATION_RESULT_MUTE_AFTER)

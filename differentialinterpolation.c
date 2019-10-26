@@ -3,16 +3,20 @@
 #include <math.h>
 #include <stdbool.h>
 
-void DifferentialInterpolation (double (*F) (double), double min, double max, int points, double **coeffs)
+void DifferentialInterpolation (double (*F) (double), double min, double max, double *X, int points, double **coeffs)
 {
-    double *x = malloc (sizeof (double) * points);
+    double *x = X == NULL ? malloc (sizeof (double) * points) : X;
     double *y = malloc (sizeof (double) * (points + 1) * points / 2);
     *coeffs = malloc (sizeof (double) * points);
 
     double step = (max - min) / (points - 1);
     for (int index = 0; index < points; ++index)
     {
-        x[index] = min + step * index;
+        if (X == NULL)
+        {
+            x[index] = min + step * index;
+        }
+
         y[index] = F (x[index]);
     }
 
@@ -36,6 +40,10 @@ void DifferentialInterpolation (double (*F) (double), double min, double max, in
         (*coeffs)[index] = y[tableIndex];
     }
 
-    free (x);
+    if (X == NULL)
+    {
+        free (x);
+    }
+
     free (y);
 }
