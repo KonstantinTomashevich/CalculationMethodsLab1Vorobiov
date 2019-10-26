@@ -3,7 +3,6 @@
 #include <math.h>
 #include <time.h>
 
-#include "def.h"
 #include "bisection.h"
 #include "discretenewton.h"
 #include "newton.h"
@@ -11,9 +10,11 @@
 
 #define SEGMENT_COUNT 3
 
-#define INTERPOLATION_NODE_SET_COUNT 3
+#define INTERPOLATION_NODE_SET_COUNT 6
 
-int interpolationNodeSet[INTERPOLATION_NODE_SET_COUNT] = {6, 12, 18};
+#define INTERPOLATION_RESULT_MUTE_AFTER 2
+
+int interpolationNodeSet[INTERPOLATION_NODE_SET_COUNT] = {6, 12, 18, 250, 500, 1000};
 
 double bisectionResultSegments[SEGMENT_COUNT][2] = {{0, 0}, {0, 0}, {0, 0}};
 
@@ -31,7 +32,7 @@ int newtonFailures = 0;
 
 int newtonTotalSteps[SEGMENT_COUNT] = {0, 0, 0};
 
-double *differentialInterpolationResults[INTERPOLATION_NODE_SET_COUNT];
+double interpolationAverageTimeMs[INTERPOLATION_NODE_SET_COUNT];
 
 double Function (double x)
 {
@@ -119,14 +120,35 @@ void DoDifferentialInterpolation()
     printf ("Differential interpolation.\n");
     for (int nodeSetIndex = 0; nodeSetIndex < INTERPOLATION_NODE_SET_COUNT; ++nodeSetIndex)
     {
-        DifferentialInterpolation (Function, -4, 4, interpolationNodeSet[nodeSetIndex],
-            differentialInterpolationResults + nodeSetIndex);
+        time_t totalTime = 0;
+        const int runCount = 1000;
 
-        printf ("    Result coefficients for %d nodes.\n", interpolationNodeSet[nodeSetIndex]);
-        for (int index = 0; index < interpolationNodeSet[nodeSetIndex]; ++index)
+        for (int runIndex = 0; runIndex < runCount; ++runIndex)
         {
-            printf ("        # a%d = %lf\n", index, differentialInterpolationResults[nodeSetIndex][index]);
+            double *result;
+            time_t begin = clock ();
+            DifferentialInterpolation (Function, -4, 4, interpolationNodeSet[nodeSetIndex], &result);
+            totalTime += clock () - begin;
+
+            if (nodeSetIndex <= INTERPOLATION_RESULT_MUTE_AFTER)
+            {
+                printf ("    Result coefficients for %d nodes, run #%d.\n",
+                        interpolationNodeSet[nodeSetIndex], runIndex);
+
+                for (int index = 0; index < interpolationNodeSet[nodeSetIndex]; ++index)
+                {
+                    printf ("        # a%d = %lf\n", index, result[index]);
+                }
+            }
+            else if (runIndex == 0)
+            {
+                printf ("Output muted for %d nodes test.\n", interpolationNodeSet[nodeSetIndex]);
+            }
+
+            free (result);
         }
+
+        interpolationAverageTimeMs[nodeSetIndex] = ((double) totalTime / runCount) / (CLOCKS_PER_SEC / 1000.0);
     }
 }
 
@@ -159,6 +181,13 @@ void PrintReport (FILE *output)
     }
 
     fprintf (output, "    Newton failures: %d.\n", newtonFailures);
+
+    fprintf (output, "#4\n");
+    for (int index = 0; index < INTERPOLATION_NODE_SET_COUNT; ++index)
+    {
+        fprintf (output, "    Average time for %d nodes: %lfms.\n",
+            interpolationNodeSet[index], interpolationAverageTimeMs[index]);
+    }
 }
 
 int main ()
