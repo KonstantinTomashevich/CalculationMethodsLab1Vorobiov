@@ -14,7 +14,7 @@
 
 #define INTERPOLATION_RESULT_MUTE_AFTER 2
 
-int interpolationNodeSet[INTERPOLATION_NODE_SET_COUNT] = {6, 12, 18, 250, 500, 1000};
+int interpolationNodeSet[INTERPOLATION_NODE_SET_COUNT] = {6, 12, 18, 500, 1000, 2000};
 
 double bisectionResultSegments[SEGMENT_COUNT][2] = {{0, 0}, {0, 0}, {0, 0}};
 
@@ -33,6 +33,8 @@ int newtonFailures = 0;
 int newtonTotalSteps[SEGMENT_COUNT] = {0, 0, 0};
 
 double interpolationAverageTimeMs[INTERPOLATION_NODE_SET_COUNT];
+
+double chebyshevInterpolationAverageTimeMs[INTERPOLATION_NODE_SET_COUNT];
 
 double Function (double x)
 {
@@ -115,40 +117,65 @@ void DoNewton (double segments[SEGMENT_COUNT][2])
     }
 }
 
+static void PrintInterpolationCoefficients(int nodeSetIndex, int runIndex, double *result)
+{
+    if (nodeSetIndex <= INTERPOLATION_RESULT_MUTE_AFTER)
+    {
+        printf ("    Result coefficients for %d nodes, run #%d.\n", interpolationNodeSet[nodeSetIndex], runIndex);
+        for (int index = 0; index < interpolationNodeSet[nodeSetIndex]; ++index)
+        {
+            printf ("        # a%d = %lf\n", index, result[index]);
+        }
+    }
+    else if (runIndex == 0)
+    {
+        printf ("    Output muted for %d nodes test.\n", interpolationNodeSet[nodeSetIndex]);
+    }
+}
+
 void DoDifferentialInterpolation()
 {
     printf ("Differential interpolation.\n");
     for (int nodeSetIndex = 0; nodeSetIndex < INTERPOLATION_NODE_SET_COUNT; ++nodeSetIndex)
     {
         time_t totalTime = 0;
-        const int runCount = 1000;
+        const int runCount = 100;
 
         for (int runIndex = 0; runIndex < runCount; ++runIndex)
         {
             double *result;
             time_t begin = clock ();
             DifferentialInterpolation (Function, -4, 4, NULL, interpolationNodeSet[nodeSetIndex], &result);
+
             totalTime += clock () - begin;
-
-            if (nodeSetIndex <= INTERPOLATION_RESULT_MUTE_AFTER)
-            {
-                printf ("    Result coefficients for %d nodes, run #%d.\n",
-                        interpolationNodeSet[nodeSetIndex], runIndex);
-
-                for (int index = 0; index < interpolationNodeSet[nodeSetIndex]; ++index)
-                {
-                    printf ("        # a%d = %lf\n", index, result[index]);
-                }
-            }
-            else if (runIndex == 0)
-            {
-                printf ("Output muted for %d nodes test.\n", interpolationNodeSet[nodeSetIndex]);
-            }
-
+            PrintInterpolationCoefficients (nodeSetIndex, runIndex, result);
             free (result);
         }
 
         interpolationAverageTimeMs[nodeSetIndex] = ((double) totalTime / runCount) / (CLOCKS_PER_SEC / 1000.0);
+    }
+}
+
+void DoChebyshevDifferentialInterpolation()
+{
+    printf ("Chebyshev Differential interpolation.\n");
+    for (int nodeSetIndex = 0; nodeSetIndex < INTERPOLATION_NODE_SET_COUNT; ++nodeSetIndex)
+    {
+        time_t totalTime = 0;
+        const int runCount = 100;
+
+        for (int runIndex = 0; runIndex < runCount; ++runIndex)
+        {
+            double *result;
+            time_t begin = clock ();
+            ChebyshevDifferentialInterpolation (Function, -4, 4, interpolationNodeSet[nodeSetIndex], &result);
+
+            totalTime += clock () - begin;
+            PrintInterpolationCoefficients (nodeSetIndex, runIndex, result);
+            free (result);
+        }
+
+        chebyshevInterpolationAverageTimeMs[nodeSetIndex] = ((double) totalTime / runCount) / (CLOCKS_PER_SEC / 1000.0);
     }
 }
 
@@ -185,8 +212,15 @@ void PrintReport (FILE *output)
     fprintf (output, "#4\n");
     for (int index = 0; index < INTERPOLATION_NODE_SET_COUNT; ++index)
     {
-        fprintf (output, "    Average time for %d nodes: %lfms.\n",
+        fprintf (output, "    Average interpolation time for %d nodes: %lfms.\n",
             interpolationNodeSet[index], interpolationAverageTimeMs[index]);
+    }
+
+    fprintf (output, "#5\n");
+    for (int index = 0; index < INTERPOLATION_NODE_SET_COUNT; ++index)
+    {
+        fprintf (output, "    Average Chebyshev interpolation time for %d nodes: %lfms.\n",
+                 interpolationNodeSet[index], chebyshevInterpolationAverageTimeMs[index]);
     }
 }
 
@@ -196,7 +230,9 @@ int main ()
     DoBisections (segments);
     DoDiscreteNewton (segments);
     DoNewton (segments);
+
     DoDifferentialInterpolation ();
+    DoChebyshevDifferentialInterpolation ();
 
     PrintReport (stdout);
     FILE *report = fopen ("report.txt", "w");

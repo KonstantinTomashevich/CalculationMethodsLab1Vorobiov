@@ -20,6 +20,8 @@ void DifferentialInterpolation (double (*F) (double), double min, double max, do
         y[index] = F (x[index]);
     }
 
+    // I found big performance drop with Chebyshev X's in this cycle. Needs investigation.
+    // Perhaps Chebyshev X's are more "complex" and division takes more time.
     for (int col = 1; col < points; ++col)
     {
         int sourceCol = col - 1;
@@ -34,7 +36,6 @@ void DifferentialInterpolation (double (*F) (double), double min, double max, do
         }
     }
 
-
     for (int index = 0, tableIndex = 0; index < points; tableIndex += points - index, ++index)
     {
         (*coeffs)[index] = y[tableIndex];
@@ -46,4 +47,19 @@ void DifferentialInterpolation (double (*F) (double), double min, double max, do
     }
 
     free (y);
+}
+
+void ChebyshevDifferentialInterpolation (double (*F) (double), double min, double max, int points, double **coeffs)
+{
+    double *X = malloc (sizeof (double) * points);
+    double halfDistance = (max - min) / 2;
+    double center = min + halfDistance;
+
+    for (int index = 0; index < points; ++index)
+    {
+        X[index] = center + cos ((2 * index + 1) * M_PI / (2 * points + 2)) * halfDistance;
+    }
+
+    DifferentialInterpolation (F, min, max, X, points, coeffs);
+    free (X);
 }
