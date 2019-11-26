@@ -8,4 +8,5 @@ add_executable(Lab1Vorobiov main.c
         discretenewton.c discretenewton.h
         newton.c newton.h
         differentialinterpolation.c differentialinterpolation.h
-        cubicspline.c cubicspline.h)
+        cubicspline.c cubicspline.h
+        bezier.c bezier.h)

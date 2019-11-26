@@ -8,6 +8,7 @@
 #include "newton.h"
 #include "differentialinterpolation.h"
 #include "cubicspline.h"
+#include "bezier.h"
 
 #define SEGMENT_COUNT 3
 
@@ -78,11 +79,13 @@ int newtonFailures = 0;
 
 int newtonTotalSteps[SEGMENT_COUNT] = {0, 0, 0};
 
-double interpolationAverageTimeMs[INTERPOLATION_NODE_SET_COUNT];
+double interpolationAverageTimeMs[INTERPOLATION_NODE_SET_COUNT] = {0};
 
-double chebyshevInterpolationAverageTimeMs[INTERPOLATION_NODE_SET_COUNT];
+double chebyshevInterpolationAverageTimeMs[INTERPOLATION_NODE_SET_COUNT] = {0};
 
-double cubicInterpolationAverageTimeMs[INTERPOLATION_NODE_SET_COUNT];
+double cubicInterpolationAverageTimeMs[INTERPOLATION_NODE_SET_COUNT] = {0};
+
+double bezierInterpolationAverageTimeMs = 0;
 
 double Function (double x)
 {
@@ -235,7 +238,7 @@ static void PrintSplineCoefficients (int nodeSetIndex, int runIndex, double *res
         printf ("left = -4\n"
                 "right = 4\n"
                 "part = (right - left) / %d\n", interpolationNodeSet[nodeSetIndex] - 1);
-        printf("nodes = [left + part * i for i in range(%d)]\n", interpolationNodeSet[nodeSetIndex]);
+        printf ("nodes = [left + part * i for i in range(%d)]\n", interpolationNodeSet[nodeSetIndex]);
 
         printf ("a = [");
         for (int index = 0; index < interpolationNodeSet[nodeSetIndex] - 1; ++index)
@@ -292,13 +295,13 @@ static void PrintSplineCoefficients (int nodeSetIndex, int runIndex, double *res
     }
 }
 
-void DoCubicSpline ()
+static void DoCubicSpline ()
 {
-    printf ("Cubic Spline\n");
+    printf ("Cubic Spline.\n");
     for (int nodeSetIndex = 0; nodeSetIndex < INTERPOLATION_NODE_SET_COUNT; ++nodeSetIndex)
     {
         time_t totalTime = 0;
-        const int runCount = 1;
+        const int runCount = 10;
 
         for (int runIndex = 0; runIndex < runCount; ++runIndex)
         {
@@ -313,6 +316,103 @@ void DoCubicSpline ()
 
         cubicInterpolationAverageTimeMs[nodeSetIndex] = ((double) totalTime / runCount) / (CLOCKS_PER_SEC / 1000.0);
     }
+}
+
+static void PrintPythonArray (const char *name, double *values, int size)
+{
+    printf ("%s = [", name);
+    for (int index = 0; index < size; ++index)
+    {
+        if (index != 0)
+        {
+            printf (", ");
+        }
+
+        printf ("%lf", values[index]);
+    }
+
+    printf ("]\n");
+}
+
+static void PrintBezierAsTFunction (double *bezier, int count)
+{
+    for (int index = 0; index < count; ++index)
+    {
+        if (index > 0)
+        {
+            printf (" + ");
+        }
+
+        printf ("%lf", bezier[index]);
+        if (index > 1)
+        {
+            printf ("*(t**%d)", index);
+        }
+        else if (index == 1)
+        {
+            printf ("*t");
+        }
+    }
+}
+
+void PrintBezier (double *x, double *y, int count, double *resultX, double *resultY, int runIndex)
+{
+    printf ("    Bezier curve for %d nodes python code:\n", count);
+    PrintPythonArray ("control_xs", x, count);
+    PrintPythonArray ("control_points", y, count);
+
+    printf ("x_func = lambda t: ");
+    PrintBezierAsTFunction (resultX, count);
+    printf ("\n");
+
+    printf ("y_func = lambda t: ");
+    PrintBezierAsTFunction (resultY, count);
+    printf ("\n");
+
+    printf ("t_array = generate_xs(0,1,300)\n"
+            "bezier_xs = [x_func(t) for t in t_array]\n"
+            "bezier_ys = [y_func(t) for t in t_array]\n"
+            "plt.scatter(control_xs, control_points)\n");
+    printf ("for i in range(%d):\n"
+            "    plt.annotate(i, (control_xs[i], control_points[i]))\n", count);
+    printf ("plt.plot(bezier_xs, bezier_ys)\n");
+}
+
+void DoBezier ()
+{
+    printf ("Bezier.\n");
+    time_t totalTime = 0;
+    const int runCount = 30;
+
+    for (int runIndex = 0; runIndex < runCount; ++runIndex)
+    {
+        const int count = 40;
+        double *x = calloc (count, sizeof (double));
+        double *y = calloc (count, sizeof (double));
+
+        for (int index = 0; index < count; ++index)
+        {
+            x[index] = -4 + rand () * 8.0 / RAND_MAX;
+            // Если нужна нормальная прямая, то берём отсортированные точки.
+            //x[index] = -4 + 8.0 / (count - 1) * index;
+            y[index] = Function (x[index]);
+        }
+
+        double *resultX;
+        double *resultY;
+
+        time_t begin = clock ();
+        BezierCasteljau (x, y, count, &resultX, &resultY);
+        totalTime += clock () - begin;
+        PrintBezier (x, y, count, resultX, resultY, runIndex);
+
+        free (x);
+        free (y);
+        free (resultX);
+        free (resultY);
+    }
+
+    bezierInterpolationAverageTimeMs = ((double) totalTime / runCount) / (CLOCKS_PER_SEC / 1000.0);
 }
 
 void PrintReport (FILE *output)
@@ -365,6 +465,9 @@ void PrintReport (FILE *output)
         fprintf (output, "    Average cubic interpolation time for %d nodes: %lfms.\n",
                  interpolationNodeSet[index], cubicInterpolationAverageTimeMs[index]);
     }
+
+    fprintf (output, "#7\n");
+    fprintf (output, "    Bezier interpolation time for 40 nodes: %lfms.\n", bezierInterpolationAverageTimeMs);
 }
 
 int main ()
@@ -379,6 +482,7 @@ int main ()
     DoDifferentialInterpolation ();
     DoChebyshevDifferentialInterpolation ();
     DoCubicSpline ();
+    DoBezier ();
 
     PrintReport (stdout);
     FILE *report = fopen ("report.txt", "w");
