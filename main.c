@@ -1,20 +1,25 @@
 #include <stdio.h>
 #include <stdlib.h>
+#define _USE_MATH_DEFINES
 #include <math.h>
 #include <time.h>
 
+#include "matrixutils.h"
 #include "bisection.h"
 #include "discretenewton.h"
 #include "newton.h"
 #include "differentialinterpolation.h"
 #include "cubicspline.h"
 #include "bezier.h"
+#include "quadraticregression.h"
 
 #define SEGMENT_COUNT 3
 
 #define INTERPOLATION_NODE_SET_COUNT 5
 
 #define INTERPOLATION_RESULT_MUTE_AFTER 2
+
+#define REGRESSION_POWER_SET_COUNT 9
 
 static const char *pythonSupportCode =
     "import numpy as np\n"
@@ -63,6 +68,8 @@ static const char *pythonSupportCode =
 
 int interpolationNodeSet[INTERPOLATION_NODE_SET_COUNT] = {6, 12, 18, 500, 1000};
 
+int regressionPowerSet[REGRESSION_POWER_SET_COUNT] = {1, 2, 3, 4, 5, 6, 9, 12, 15};
+
 double bisectionResultSegments[SEGMENT_COUNT][2] = {{0, 0}, {0, 0}, {0, 0}};
 
 int bisectionTotalSteps = 0;
@@ -86,6 +93,8 @@ double chebyshevInterpolationAverageTimeMs[INTERPOLATION_NODE_SET_COUNT] = {0};
 double cubicInterpolationAverageTimeMs[INTERPOLATION_NODE_SET_COUNT] = {0};
 
 double bezierInterpolationAverageTimeMs = 0;
+
+double quadraticRegressionInterpolationAverageTimeMs[REGRESSION_POWER_SET_COUNT] = {0};
 
 double Function (double x)
 {
@@ -355,7 +364,7 @@ static void PrintBezierAsTFunction (double *bezier, int count)
     }
 }
 
-void PrintBezier (double *x, double *y, int count, double *resultX, double *resultY, int runIndex)
+void PrintBezier (double *x, double *y, int count, double *resultX, double *resultY)
 {
     printf ("    Bezier curve for %d nodes python code:\n", count);
     PrintPythonArray ("control_xs", x, count);
@@ -404,7 +413,7 @@ void DoBezier ()
         time_t begin = clock ();
         BezierCasteljau (x, y, count, &resultX, &resultY);
         totalTime += clock () - begin;
-        PrintBezier (x, y, count, resultX, resultY, runIndex);
+        PrintBezier (x, y, count, resultX, resultY);
 
         free (x);
         free (y);
@@ -413,6 +422,87 @@ void DoBezier ()
     }
 
     bezierInterpolationAverageTimeMs = ((double) totalTime / runCount) / (CLOCKS_PER_SEC / 1000.0);
+}
+
+static void PrintQuadraticRegressionAsXFunction (double **quadratic, int count)
+{
+    for (int index = 0; index < count; ++index)
+    {
+        if (index > 0)
+        {
+            printf (" + ");
+        }
+
+        printf ("%lf", quadratic[index][0]);
+        if (index > 1)
+        {
+            printf ("*(x**%d)", index);
+        }
+        else if (index == 1)
+        {
+            printf ("*x");
+        }
+    }
+}
+
+void PrintQuadraticRegression (double *x, double *y, int count, double **result, int power, int runIndex)
+{
+    if (runIndex != 0)
+    {
+        return;
+    }
+
+    printf ("    Quadratic Regression of power %d for %d nodes python code:\n", power, count);
+    PrintPythonArray ("control_xs", x, count);
+    PrintPythonArray ("control_points", y, count);
+
+    printf ("func = lambda x: ");
+    PrintQuadraticRegressionAsXFunction (result, power + 1);
+    printf ("\n");
+
+    printf ("x_array = generate_xs(left, right,1000)\n"
+            "ys = [func(x) for x in x_array]\n"
+            "plt.scatter(control_xs, control_points)\n");
+    printf ("plt.plot(x_array, ys)\n");
+}
+
+static void DoQuadraticRegression()
+{
+    printf ("Quadratic regression.\n");
+    const int runCount = 10;
+
+    for (int powerIndex = 0; powerIndex < REGRESSION_POWER_SET_COUNT; ++powerIndex)
+    {
+        const int power = regressionPowerSet[powerIndex];
+        time_t totalTime = 0;
+
+        for (int runIndex = 0; runIndex < runCount; ++runIndex)
+        {
+            const int count = 100;
+            double *x = calloc (count, sizeof (double));
+            double *y = calloc (count, sizeof (double));
+
+            for (int index = 0; index < count; ++index)
+            {
+                // TODO: Use equidistant points by now (despite lab requirements).
+                x[index] = -4 + 8.0 / (count - 1) * index;
+                y[index] = Function (x[index]);
+            }
+
+            double **result;
+            time_t begin = clock ();
+            QuadraticRegression (x, y, count, power, &result);
+            totalTime += clock () - begin;
+            PrintQuadraticRegression (x, y, count, result, power, runIndex);
+
+            free (x);
+            free (y);
+            FreeMatrix (result, power + 1, 1);
+        }
+
+        quadraticRegressionInterpolationAverageTimeMs[powerIndex] =
+            ((double) totalTime / runCount) / (CLOCKS_PER_SEC / 1000.0);
+    }
 }
 
 void PrintReport (FILE *output)
@@ -468,6 +558,13 @@ void PrintReport (FILE *output)
 
     fprintf (output, "#7\n");
     fprintf (output, "    Bezier interpolation time for 40 nodes: %lfms.\n", bezierInterpolationAverageTimeMs);
+
+    fprintf (output, "#8\n");
+    for (int index = 0; index < REGRESSION_POWER_SET_COUNT; ++index)
+    {
+        fprintf (output, "    Average quadratic regression time for power %d: %lfms.\n",
+                 regressionPowerSet[index], quadraticRegressionInterpolationAverageTimeMs[index]);
+    }
 }
 
 int main ()
@@ -483,6 +580,7 @@ int main ()
     DoChebyshevDifferentialInterpolation ();
     DoCubicSpline ();
     DoBezier ();
+    DoQuadraticRegression ();
 
     PrintReport (stdout);
     FILE *report = fopen ("report.txt", "w");
