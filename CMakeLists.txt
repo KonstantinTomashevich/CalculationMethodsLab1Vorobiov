@@ -11,6 +11,5 @@ add_executable(Lab1Vorobiov main.c
         cubicspline.c cubicspline.h
         bezier.c bezier.h
         matrixutils.c matrixutils.h
-        gmresarnoldi.c gmresarnoldi.h
-        minquads.c minquads.h
-        cholesky.c cholesky.h)
+        householder.c householder.h
+        quadraticregression.c quadraticregression.h)
