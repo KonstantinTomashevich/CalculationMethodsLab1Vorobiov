@@ -9,4 +9,8 @@ add_executable(Lab1Vorobiov main.c
         newton.c newton.h
         differentialinterpolation.c differentialinterpolation.h
         cubicspline.c cubicspline.h
-        bezier.c bezier.h)
+        bezier.c bezier.h
+        matrixutils.c matrixutils.h
+        gmresarnoldi.c gmresarnoldi.h
+        minquads.c minquads.h
+        cholesky.c cholesky.h)
