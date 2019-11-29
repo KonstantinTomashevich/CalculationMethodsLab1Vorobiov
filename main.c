@@ -12,6 +12,7 @@
 #include "cubicspline.h"
 #include "bezier.h"
 #include "quadraticregression.h"
+#include "bilagrange.h"
 
 #define SEGMENT_COUNT 3
 
@@ -96,6 +97,8 @@ double bezierInterpolationAverageTimeMs = 0;
 
 double quadraticRegressionInterpolationAverageTimeMs[REGRESSION_POWER_SET_COUNT] = {0};
 
+double biLagrangeInterpolationAverageTimeMs[INTERPOLATION_NODE_SET_COUNT] = {0};
+
 double Function (double x)
 {
     return (pow (x, 9) + M_PI) * cos (log (pow (x, 2) + 1)) / exp (pow (x, 2)) - x / 2019;
@@ -107,6 +110,11 @@ double FunctionDerivative (double x)
         sin (log (pow (x, 2) + 1))) / (pow (x, 2) + 1) - 2 *
         pow (M_E, -pow (x, 2)) * (pow (x, 9) + M_PI) * x * cos (log (pow (x, 2) + 1)) + 9 *
         pow (M_E, -pow (x, 2)) * pow (x, 8) * cos (log (pow (x, 2) + 1)) - 1.0 / 2019;
+}
+
+double GFunction (double x, double y)
+{
+    return (pow (x, 9) + M_PI) * cos (log (pow (y, 4) + 1)) / ((pow (y, 2) + M_E) * exp (x * x));
 }
 
 void DoBisections (double segments[SEGMENT_COUNT][2])
@@ -184,7 +192,7 @@ static void PrintInterpolationCoefficients (int nodeSetIndex, int runIndex, doub
         printf ("    Result coefficients for %d nodes, run #%d.\n", interpolationNodeSet[nodeSetIndex], runIndex);
         for (int index = 0; index < interpolationNodeSet[nodeSetIndex]; ++index)
         {
-            printf ("        # a%d = %lf\n", index, result[index]);
+            printf ("        # a%d = %0.16lf\n", index, result[index]);
         }
     }
     else if (runIndex == 0)
@@ -257,7 +265,7 @@ static void PrintSplineCoefficients (int nodeSetIndex, int runIndex, double *res
                 printf (", ");
             }
 
-            printf ("%lf", result[4 * index]);
+            printf ("%0.16lf", result[4 * index]);
         }
 
         printf ("]\nb = [");
@@ -268,7 +276,7 @@ static void PrintSplineCoefficients (int nodeSetIndex, int runIndex, double *res
                 printf (", ");
             }
 
-            printf ("%lf", result[4 * index + 1]);
+            printf ("%0.16lf", result[4 * index + 1]);
         }
 
         printf ("]\nc = [");
@@ -279,7 +287,7 @@ static void PrintSplineCoefficients (int nodeSetIndex, int runIndex, double *res
                 printf (", ");
             }
 
-            printf ("%lf", result[4 * index + 2]);
+            printf ("%0.16lf", result[4 * index + 2]);
         }
 
         printf ("]\nd = [");
@@ -290,7 +298,7 @@ static void PrintSplineCoefficients (int nodeSetIndex, int runIndex, double *res
                 printf (", ");
             }
 
-            printf ("%lf", result[4 * index + 3]);
+            printf ("%0.16lf", result[4 * index + 3]);
         }
 
         printf ("]\nxs = generate_xs(left, right, 1000)\n"
@@ -337,7 +345,7 @@ static void PrintPythonArray (const char *name, double *values, int size)
             printf (", ");
         }
 
-        printf ("%lf", values[index]);
+        printf ("%0.16lf", values[index]);
     }
 
     printf ("]\n");
@@ -352,7 +360,7 @@ static void PrintBezierAsTFunction (double *bezier, int count)
             printf (" + ");
         }
 
-        printf ("%lf", bezier[index]);
+        printf ("%0.16lf", bezier[index]);
         if (index > 1)
         {
             printf ("*(t**%d)", index);
@@ -433,7 +441,7 @@ static void PrintQuadraticRegressionAsXFunction (double **quadratic, int count)
             printf (" + ");
         }
 
-        printf ("%lf", quadratic[index][0]);
+        printf ("%0.16lf", quadratic[index][0]);
         if (index > 1)
         {
             printf ("*(x**%d)", index);
@@ -505,6 +513,60 @@ static void DoQuadraticRegression()
     }
 }
 
+static void DoBiLagrange ()
+{
+    printf ("BiLagrange.\n");
+    for (int nodeSetIndex = 0; nodeSetIndex <= INTERPOLATION_RESULT_MUTE_AFTER; ++nodeSetIndex)
+    {
+        time_t totalTime = 0;
+        const int runCount = 5;
+
+        for (int runIndex = 0; runIndex < runCount; ++runIndex)
+        {
+            double *x = calloc (interpolationNodeSet[nodeSetIndex], sizeof (double));
+            x[0] = -4;
+
+            for (int index = 1; index < interpolationNodeSet[nodeSetIndex]; ++index)
+            {
+                x[index] = x[index - 1] + 8.0 / (interpolationNodeSet[nodeSetIndex] - 1);
+            }
+
+            double *y = calloc (interpolationNodeSet[nodeSetIndex], sizeof (double));
+            y[0] = -6;
+
+            for (int index = 1; index < interpolationNodeSet[nodeSetIndex]; ++index)
+            {
+                y[index] = y[index - 1] + 12.0 / (interpolationNodeSet[nodeSetIndex] - 1);
+            }
+
+            double **z = AllocateMatrix (interpolationNodeSet[nodeSetIndex], interpolationNodeSet[nodeSetIndex]);
+            for (int row = 0; row < interpolationNodeSet[nodeSetIndex]; ++row)
+            {
+                for (int col = 0; col < interpolationNodeSet[nodeSetIndex]; ++col)
+                {
+                    z[row][col] = GFunction (x[row], y[col]);
+                }
+            }
+
+            PrintMatrix (z, interpolationNodeSet[nodeSetIndex], interpolationNodeSet[nodeSetIndex]);
+            printf ("    Polynomial for %dx%d split: ",
+                interpolationNodeSet[nodeSetIndex], interpolationNodeSet[nodeSetIndex]);
+            time_t begin = clock ();
+
+            PrintBiLagrangePolynomial (x, y, interpolationNodeSet[nodeSetIndex], z, stdout);
+            totalTime += clock () - begin;
+            printf ("\n");
+
+            free (x);
+            free (y);
+            FreeMatrix (z, interpolationNodeSet[nodeSetIndex], interpolationNodeSet[nodeSetIndex]);
+        }
+
+        biLagrangeInterpolationAverageTimeMs[nodeSetIndex] =
+            ((double) totalTime / runCount) / (CLOCKS_PER_SEC / 1000.0);
+    }
+}
+
 void PrintReport (FILE *output)
 {
     fprintf (output, "#1\n");
@@ -565,6 +627,13 @@ void PrintReport (FILE *output)
         fprintf (output, "    Average quadratic regression time for power %d: %lfms.\n",
                  regressionPowerSet[index], quadraticRegressionInterpolationAverageTimeMs[index]);
     }
+
+    fprintf (output, "#9\n");
+    for (int index = 0; index < INTERPOLATION_NODE_SET_COUNT; ++index)
+    {
+        fprintf (output, "    Average bilagrange interpolation time for %d nodes: %lfms.\n",
+                 interpolationNodeSet[index], biLagrangeInterpolationAverageTimeMs[index]);
+    }
 }
 
 int main ()
@@ -581,6 +650,7 @@ int main ()
     DoCubicSpline ();
     DoBezier ();
     DoQuadraticRegression ();
+    DoBiLagrange ();
 
     PrintReport (stdout);
     FILE *report = fopen ("report.txt", "w");

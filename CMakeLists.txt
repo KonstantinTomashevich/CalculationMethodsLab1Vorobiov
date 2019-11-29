@@ -12,4 +12,5 @@ add_executable(Lab1Vorobiov main.c
         bezier.c bezier.h
         matrixutils.c matrixutils.h
         householder.c householder.h
-        quadraticregression.c quadraticregression.h)
+        quadraticregression.c quadraticregression.h
+        bilagrange.c bilagrange.h)
