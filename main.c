@@ -13,6 +13,7 @@
 #include "bezier.h"
 #include "quadraticregression.h"
 #include "bilagrange.h"
+#include "simpleintegrals.h"
 
 #define SEGMENT_COUNT 3
 
@@ -21,6 +22,12 @@
 #define INTERPOLATION_RESULT_MUTE_AFTER 2
 
 #define REGRESSION_POWER_SET_COUNT 9
+
+#define I 4.967532679086564
+
+#define INTEGRAL_STEP_POWERS 22
+
+#define NEWTON_POWERS_COUNT 6
 
 static const char *pythonSupportCode =
     "import numpy as np\n"
@@ -67,9 +74,11 @@ static const char *pythonSupportCode =
     "def generate_xs(left, right, n):\n"
     "    return sorted([rnd.uniform(left,right) for i in range(n)])\n";
 
-int interpolationNodeSet[INTERPOLATION_NODE_SET_COUNT] = {6, 12, 18, 500, 1000};
+const int interpolationNodeSet[INTERPOLATION_NODE_SET_COUNT] = {6, 12, 18, 500, 1000};
 
-int regressionPowerSet[REGRESSION_POWER_SET_COUNT] = {1, 2, 3, 4, 5, 6, 9, 12, 15};
+const int regressionPowerSet[REGRESSION_POWER_SET_COUNT] = {1, 2, 3, 4, 5, 6, 9, 12, 15};
+
+const int newtonPowers[NEWTON_POWERS_COUNT] = {5, 7, 9, 11, 13, 15};
 
 double bisectionResultSegments[SEGMENT_COUNT][2] = {{0, 0}, {0, 0}, {0, 0}};
 
@@ -98,6 +107,30 @@ double bezierInterpolationAverageTimeMs = 0;
 double quadraticRegressionInterpolationAverageTimeMs[REGRESSION_POWER_SET_COUNT] = {0};
 
 double biLagrangeInterpolationAverageTimeMs[INTERPOLATION_NODE_SET_COUNT] = {0};
+
+double leftRectangleI[INTEGRAL_STEP_POWERS] = {0};
+
+double rightRectangleI[INTEGRAL_STEP_POWERS] = {0};
+
+double mediumRectangleI[INTEGRAL_STEP_POWERS] = {0};
+
+double trapeziumI[INTEGRAL_STEP_POWERS] = {0};
+
+double simpsonI[INTEGRAL_STEP_POWERS] = {0};
+
+double newtonI[INTEGRAL_STEP_POWERS * NEWTON_POWERS_COUNT] = {0};
+
+double leftRectangleAverageMs[INTEGRAL_STEP_POWERS] = {0};
+
+double rightRectangleAverageMs[INTEGRAL_STEP_POWERS] = {0};
+
+double mediumRectangleAverageMs[INTEGRAL_STEP_POWERS] = {0};
+
+double trapeziumAverageMs[INTEGRAL_STEP_POWERS] = {0};
+
+double simpsonAverageMs[INTEGRAL_STEP_POWERS] = {0};
+
+double newtonAverageMs[INTEGRAL_STEP_POWERS * NEWTON_POWERS_COUNT] = {0};
 
 double Function (double x)
 {
@@ -474,7 +507,7 @@ void PrintQuadraticRegression (double *x, double *y, int count, double **result,
     printf ("plt.plot(x_array, ys)\n");
 }
 
-static void DoQuadraticRegression()
+static void DoQuadraticRegression ()
 {
     printf ("Quadratic regression.\n");
     const int runCount = 10;
@@ -548,9 +581,8 @@ static void DoBiLagrange ()
                 }
             }
 
-            PrintMatrix (z, interpolationNodeSet[nodeSetIndex], interpolationNodeSet[nodeSetIndex]);
             printf ("    Polynomial for %dx%d split: ",
-                interpolationNodeSet[nodeSetIndex], interpolationNodeSet[nodeSetIndex]);
+                    interpolationNodeSet[nodeSetIndex], interpolationNodeSet[nodeSetIndex]);
             time_t begin = clock ();
 
             PrintBiLagrangePolynomial (x, y, interpolationNodeSet[nodeSetIndex], z, stdout);
@@ -564,6 +596,62 @@ static void DoBiLagrange ()
 
         biLagrangeInterpolationAverageTimeMs[nodeSetIndex] =
             ((double) totalTime / runCount) / (CLOCKS_PER_SEC / 1000.0);
+    }
+}
+
+void DoSimpleIntegrals ()
+{
+    const int runCount = 10;
+    long parts = 1;
+
+    // FIXME: Doing now only up to 11, must do up to 21!
+    for (int i = 0; i < 9; ++i)
+    {
+        printf ("Integral parts: %ld\n", parts);
+        for (int run = 0; run < runCount; ++run)
+        {
+            time_t begin = clock ();
+            leftRectangleI[i] = LeftRectangleIntegral (Function, -4, 4, parts);
+            leftRectangleAverageMs[i] += (clock () - begin) * 1.0 / runCount;
+        }
+
+        for (int run = 0; run < runCount; ++run)
+        {
+            time_t begin = clock ();
+            rightRectangleI[i] = RightRectangleIntegral (Function, -4, 4, parts);
+            rightRectangleAverageMs[i] += (clock () - begin) * 1.0 / runCount;
+        }
+
+        for (int run = 0; run < runCount; ++run)
+        {
+            time_t begin = clock ();
+            mediumRectangleI[i] = MediumRectangleIntegral (Function, -4, 4, parts);
+            mediumRectangleAverageMs[i] += (clock () - begin) * 1.0 / runCount;
+        }
+
+        for (int run = 0; run < runCount; ++run)
+        {
+            time_t begin = clock ();
+            trapeziumI[i] = TrapeziumRectangleIntegral (Function, -4, 4, parts);
+            trapeziumAverageMs[i] += (clock () - begin) * 1.0 / runCount;
+        }
+
+        for (int run = 0; run < runCount; ++run)
+        {
+            time_t begin = clock ();
+            simpsonI[i] = SimpsonRectangleIntegral (Function, -4, 4, parts);
+            simpsonAverageMs[i] += (clock () - begin) * 1.0 / runCount;
+        }
+
+        for (int newtonPowerIndex = 0; newtonPowerIndex < NEWTON_POWERS_COUNT; ++newtonPowerIndex)
+        {
+            int index = i * NEWTON_POWERS_COUNT + newtonPowerIndex;
+            time_t begin = clock ();
+            newtonI[index] = NewtonIntegral (Function, newtonPowers[newtonPowerIndex], -4, 4, parts);
+            newtonAverageMs[index] += (clock () - begin) * 1.0 / runCount;
+        }
+
+        parts *= 4;
     }
 }
 
@@ -634,6 +722,32 @@ void PrintReport (FILE *output)
         fprintf (output, "    Average bilagrange interpolation time for %d nodes: %lfms.\n",
                  interpolationNodeSet[index], biLagrangeInterpolationAverageTimeMs[index]);
     }
+
+    fprintf (output, "#11\n");
+    for (int i = 0; i < INTEGRAL_STEP_POWERS; ++i)
+    {
+        fprintf (output, "    Power: %d.\n", i);
+        fprintf (output, "        Left rectangle difference: %22.16lf.\n", fabs (I - leftRectangleI[i]));
+        fprintf (output, "        Right rectangle difference: %22.16lf.\n", fabs (I - rightRectangleI[i]));
+        fprintf (output, "        Medium rectangle difference: %22.16lf.\n", fabs (I - mediumRectangleI[i]));
+        fprintf (output, "        Trapezium difference: %22.16lf.\n", fabs (I - trapeziumI[i]));
+        fprintf (output, "        Simpson difference: %22.16lf.\n", fabs (I - simpsonI[i]));
+
+        fprintf (output, "        Left rectangle time: %22.16lfms.\n", leftRectangleAverageMs[i]);
+        fprintf (output, "        Right rectangle time: %22.16lfms.\n", rightRectangleAverageMs[i]);
+        fprintf (output, "        Medium rectangle time: %22.16lfms.\n", mediumRectangleAverageMs[i]);
+        fprintf (output, "        Trapezium time: %22.16lfms.\n", trapeziumAverageMs[i]);
+        fprintf (output, "        Simpson time: %22.16lfms.\n", simpsonAverageMs[i]);
+
+        for (int newtonIndex = 0; newtonIndex < NEWTON_POWERS_COUNT; ++newtonIndex)
+        {
+            int index = i * NEWTON_POWERS_COUNT + newtonIndex;
+            fprintf (output, "        Newton power %d difference: %22.16lf.\n",
+                     newtonPowers[newtonIndex], fabs (I - newtonI[index]));
+            fprintf (output, "        Newton power %d time: %22.16lfms.\n",
+                     newtonPowers[newtonIndex], newtonAverageMs[index]);
+        }
+    }
 }
 
 int main ()
@@ -645,12 +759,13 @@ int main ()
 
     printf ("Python support code:\n%s\n", pythonSupportCode);
 
-    DoDifferentialInterpolation ();
-    DoChebyshevDifferentialInterpolation ();
-    DoCubicSpline ();
-    DoBezier ();
-    DoQuadraticRegression ();
-    DoBiLagrange ();
+    //DoDifferentialInterpolation ();
+    //DoChebyshevDifferentialInterpolation ();
+    //DoCubicSpline ();
+    //DoBezier ();
+    //DoQuadraticRegression ();
+    //DoBiLagrange ();
+    DoSimpleIntegrals ();
 
     PrintReport (stdout);
     FILE *report = fopen ("report.txt", "w");
