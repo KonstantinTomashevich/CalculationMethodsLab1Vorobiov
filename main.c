@@ -14,6 +14,7 @@
 #include "quadraticregression.h"
 #include "bilagrange.h"
 #include "simpleintegrals.h"
+#include "gaussianintegral.h"
 
 #define SEGMENT_COUNT 3
 
@@ -28,6 +29,8 @@
 #define INTEGRAL_STEP_POWERS 22
 
 #define NEWTON_POWERS_COUNT 6
+
+#define GAUSSIAN_POWERS_COUNT 6
 
 static const char *pythonSupportCode =
     "import numpy as np\n"
@@ -80,6 +83,8 @@ const int regressionPowerSet[REGRESSION_POWER_SET_COUNT] = {1, 2, 3, 4, 5, 6, 9,
 
 const int newtonPowers[NEWTON_POWERS_COUNT] = {5, 7, 9, 11, 13, 15};
 
+const int gaussianPowers[GAUSSIAN_POWERS_COUNT] = {2, 3, 4, 5, 6, 7};
+
 double bisectionResultSegments[SEGMENT_COUNT][2] = {{0, 0}, {0, 0}, {0, 0}};
 
 int bisectionTotalSteps = 0;
@@ -120,6 +125,8 @@ double simpsonI[INTEGRAL_STEP_POWERS] = {0};
 
 double newtonI[INTEGRAL_STEP_POWERS * NEWTON_POWERS_COUNT] = {0};
 
+double gaussianI[INTEGRAL_STEP_POWERS * GAUSSIAN_POWERS_COUNT] = {0};
+
 double leftRectangleAverageMs[INTEGRAL_STEP_POWERS] = {0};
 
 double rightRectangleAverageMs[INTEGRAL_STEP_POWERS] = {0};
@@ -131,6 +138,8 @@ double trapeziumAverageMs[INTEGRAL_STEP_POWERS] = {0};
 double simpsonAverageMs[INTEGRAL_STEP_POWERS] = {0};
 
 double newtonAverageMs[INTEGRAL_STEP_POWERS * NEWTON_POWERS_COUNT] = {0};
+
+double gaussianAverageMs[INTEGRAL_STEP_POWERS * GAUSSIAN_POWERS_COUNT] = {0};
 
 double Function (double x)
 {
@@ -599,7 +608,7 @@ static void DoBiLagrange ()
     }
 }
 
-void DoSimpleIntegrals ()
+void DoIntegrals ()
 {
     const int runCount = 10;
     long parts = 1;
@@ -649,6 +658,14 @@ void DoSimpleIntegrals ()
             time_t begin = clock ();
             newtonI[index] = NewtonIntegral (Function, newtonPowers[newtonPowerIndex], -4, 4, parts);
             newtonAverageMs[index] += (clock () - begin) * 1.0 / runCount;
+        }
+
+        for (int gaussianPowerIndex = 0; gaussianPowerIndex < GAUSSIAN_POWERS_COUNT; ++gaussianPowerIndex)
+        {
+            int index = i * GAUSSIAN_POWERS_COUNT + gaussianPowerIndex;
+            time_t begin = clock ();
+            gaussianI[index] = GaussianIntegral (Function, gaussianPowers[gaussianPowerIndex], -4, 4, parts);
+            gaussianAverageMs[index] += (clock () - begin) * 1.0 / runCount;
         }
 
         parts *= 4;
@@ -747,6 +764,15 @@ void PrintReport (FILE *output)
             fprintf (output, "        Newton power %d time: %22.16lfms.\n",
                      newtonPowers[newtonIndex], newtonAverageMs[index]);
         }
+
+        for (int gaussianIndex = 0; gaussianIndex < GAUSSIAN_POWERS_COUNT; ++gaussianIndex)
+        {
+            int index = i * GAUSSIAN_POWERS_COUNT + gaussianIndex;
+            fprintf (output, "        Gaussian power %d difference: %22.16lf.\n",
+                     gaussianPowers[gaussianIndex], fabs (I - gaussianI[index]));
+            fprintf (output, "        Gaussian power %d time: %22.16lfms.\n",
+                     gaussianPowers[gaussianIndex], gaussianAverageMs[index]);
+        }
     }
 }
 
@@ -759,13 +785,13 @@ int main ()
 
     printf ("Python support code:\n%s\n", pythonSupportCode);
 
-    //DoDifferentialInterpolation ();
-    //DoChebyshevDifferentialInterpolation ();
-    //DoCubicSpline ();
-    //DoBezier ();
-    //DoQuadraticRegression ();
-    //DoBiLagrange ();
-    DoSimpleIntegrals ();
+    DoDifferentialInterpolation ();
+    DoChebyshevDifferentialInterpolation ();
+    DoCubicSpline ();
+    DoBezier ();
+    DoQuadraticRegression ();
+    DoBiLagrange ();
+    DoIntegrals ();
 
     PrintReport (stdout);
     FILE *report = fopen ("report.txt", "w");
