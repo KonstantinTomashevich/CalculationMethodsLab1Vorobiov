@@ -15,6 +15,7 @@
 #include "bilagrange.h"
 #include "simpleintegrals.h"
 #include "gaussianintegral.h"
+#include "runge.h"
 
 #define SEGMENT_COUNT 3
 
@@ -127,6 +128,10 @@ double newtonI[INTEGRAL_STEP_POWERS * NEWTON_POWERS_COUNT] = {0};
 
 double gaussianI[INTEGRAL_STEP_POWERS * GAUSSIAN_POWERS_COUNT] = {0};
 
+double rungeNewtonI[NEWTON_POWERS_COUNT] = {0};
+
+double rungeGaussianI[GAUSSIAN_POWERS_COUNT] = {0};
+
 double leftRectangleAverageMs[INTEGRAL_STEP_POWERS] = {0};
 
 double rightRectangleAverageMs[INTEGRAL_STEP_POWERS] = {0};
@@ -140,6 +145,14 @@ double simpsonAverageMs[INTEGRAL_STEP_POWERS] = {0};
 double newtonAverageMs[INTEGRAL_STEP_POWERS * NEWTON_POWERS_COUNT] = {0};
 
 double gaussianAverageMs[INTEGRAL_STEP_POWERS * GAUSSIAN_POWERS_COUNT] = {0};
+
+double rungeNewtonAverageMs[INTEGRAL_STEP_POWERS * NEWTON_POWERS_COUNT] = {0};
+
+double rungeGaussianAverageMs[INTEGRAL_STEP_POWERS * GAUSSIAN_POWERS_COUNT] = {0};
+
+unsigned long rungeNewtonPartitions[NEWTON_POWERS_COUNT] = {0};
+
+unsigned long rungeGaussianPartitions[GAUSSIAN_POWERS_COUNT] = {0};
 
 double Function (double x)
 {
@@ -672,6 +685,33 @@ void DoIntegrals ()
     }
 }
 
+void DoRungeRule ()
+{
+    const int runCount = 10;
+    const double epsilon = pow (10, -15);
+
+    for (int run = 0; run < runCount; ++run)
+    {
+        for (int newtonPowerIndex = 0; newtonPowerIndex < NEWTON_POWERS_COUNT; ++newtonPowerIndex)
+        {
+            time_t begin = clock ();
+            rungeNewtonI[newtonPowerIndex] = RungeRule (NewtonIntegral, Function,
+                                                        newtonPowers[newtonPowerIndex], -4, 4,
+                                                        epsilon, rungeNewtonPartitions + newtonPowerIndex);
+            rungeNewtonAverageMs[newtonPowerIndex] += (clock () - begin) * 1.0 / runCount;
+        }
+
+        for (int gaussianPowerIndex = 0; gaussianPowerIndex < GAUSSIAN_POWERS_COUNT; ++gaussianPowerIndex)
+        {
+            time_t begin = clock ();
+            rungeGaussianI[gaussianPowerIndex] = RungeRule (GaussianIntegral, Function,
+                                                            gaussianPowers[gaussianPowerIndex], -4, 4,
+                                                            epsilon, rungeGaussianPartitions + gaussianPowerIndex);
+            rungeGaussianAverageMs[gaussianPowerIndex] += (clock () - begin) * 1.0 / runCount;
+        }
+    }
+}
+
 void PrintReport (FILE *output)
 {
     fprintf (output, "#1\n");
@@ -774,6 +814,27 @@ void PrintReport (FILE *output)
                      gaussianPowers[gaussianIndex], gaussianAverageMs[index]);
         }
     }
+
+    fprintf (output, "#12\n");
+    for (int newtonIndex = 0; newtonIndex < NEWTON_POWERS_COUNT; ++newtonIndex)
+    {
+        fprintf (output, "    Runge Newton power %d difference: %22.16lf.\n",
+                 newtonPowers[newtonIndex], fabs (I - rungeNewtonI[newtonIndex]));
+        fprintf (output, "    Runge Newton power %d time: %22.16lfms.\n",
+                 newtonPowers[newtonIndex], rungeNewtonAverageMs[newtonIndex]);
+        fprintf (output, "    Runge Newton power %d partitions: %ld.\n",
+                 newtonPowers[newtonIndex], rungeNewtonPartitions[newtonIndex]);
+    }
+
+    for (int gaussianIndex = 0; gaussianIndex < GAUSSIAN_POWERS_COUNT; ++gaussianIndex)
+    {
+        fprintf (output, "    Runge Gaussian power %d difference: %22.16lf.\n",
+                 gaussianPowers[gaussianIndex], fabs (I - rungeGaussianI[gaussianIndex]));
+        fprintf (output, "    Runge Gaussian power %d time: %22.16lfms.\n",
+                 gaussianPowers[gaussianIndex], rungeGaussianAverageMs[gaussianIndex]);
+        fprintf (output, "    Runge Gaussian power %d partitions: %ld.\n",
+                 gaussianPowers[gaussianIndex], rungeGaussianPartitions[gaussianIndex]);
+    }
 }
 
 int main ()
@@ -792,6 +853,7 @@ int main ()
     DoQuadraticRegression ();
     DoBiLagrange ();
     DoIntegrals ();
+    DoRungeRule ();
 
     PrintReport (stdout);
     FILE *report = fopen ("report.txt", "w");

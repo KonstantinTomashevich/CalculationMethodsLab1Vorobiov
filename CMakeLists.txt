@@ -15,4 +15,5 @@ add_executable(Lab1Vorobiov main.c
         quadraticregression.c quadraticregression.h
         bilagrange.c bilagrange.h
         simpleintegrals.c simpleintegrals.h
-        gaussianintegral.c gaussianintegral.h)
+        gaussianintegral.c gaussianintegral.h
+        runge.c runge.h)
