@@ -16,4 +16,5 @@ add_executable(Lab1Vorobiov main.c
         bilagrange.c bilagrange.h
         simpleintegrals.c simpleintegrals.h
         gaussianintegral.c gaussianintegral.h
-        runge.c runge.h)
+        runge.c runge.h
+        bicubicspline.c bilagrange.h)

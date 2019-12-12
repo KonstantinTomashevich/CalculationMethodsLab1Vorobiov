@@ -16,6 +16,7 @@
 #include "simpleintegrals.h"
 #include "gaussianintegral.h"
 #include "runge.h"
+#include "bicubicspline.h"
 
 #define SEGMENT_COUNT 3
 
@@ -76,7 +77,33 @@ static const char *pythonSupportCode =
     "    return spline\n"
     "\n"
     "def generate_xs(left, right, n):\n"
-    "    return sorted([rnd.uniform(left,right) for i in range(n)])\n";
+    "    return sorted([rnd.uniform(left,right) for i in range(n)])\n"
+    "\n"
+    "xleft, xright, yleft, yright = -4, 4, -6, 6\n"
+    "def build_mesh(zs):\n"
+    "    x_step = (xright - xleft)/math.ceil(math.sqrt(len(zs)))\n"
+    "    y_step = (yright - yleft)/math.ceil(math.sqrt(len(zs)))  \n"
+    "    plt.style.use('ggplot')\n"
+    "    fig = plt.figure()\n"
+    "    ax = Axes3D(fig)\n"
+    "    ax.view_init(30, 30)\n"
+    "    ax.set_zlim(-3, 3)\n"
+    "    plt.rcParams['figure.figsize'] = (15, 5)\n"
+    "    Xs = [xleft + x_step * i for i in range(math.ceil(math.sqrt(len(zs))))]\n"
+    "    Ys = [yleft + y_step * i for i in range(math.ceil(math.sqrt(len(zs))))]\n"
+    "    X, Y = np.meshgrid(Xs, Ys)\n"
+    "    \n"
+    "    Z = []\n"
+    "    for row in range(0, math.ceil(math.sqrt(len(zs)))):\n"
+    "        R = []\n"
+    "        for col in range(0, math.ceil(math.sqrt(len(zs)))):\n"
+    "            R.append(zs[col * math.ceil(math.sqrt(len(zs))) + row])\n"
+    "        Z.append(R)\n"
+    "    \n"
+    "    ax.plot_surface(X, Y, np.array(Z))\n"
+    "    plt.grid(True)\n"
+    "    plt.show()\n"
+    "\n";
 
 const int interpolationNodeSet[INTERPOLATION_NODE_SET_COUNT] = {6, 12, 18, 500, 1000};
 
@@ -113,6 +140,8 @@ double bezierInterpolationAverageTimeMs = 0;
 double quadraticRegressionInterpolationAverageTimeMs[REGRESSION_POWER_SET_COUNT] = {0};
 
 double biLagrangeInterpolationAverageTimeMs[INTERPOLATION_NODE_SET_COUNT] = {0};
+
+double bicubicInterpolationAverageTimeMs[INTERPOLATION_NODE_SET_COUNT] = {0};
 
 double leftRectangleI[INTEGRAL_STEP_POWERS] = {0};
 
@@ -712,6 +741,82 @@ void DoRungeRule ()
     }
 }
 
+void DoBiCubic ()
+{
+    printf ("BiCubic.\n");
+    const int gridSize = 250;
+    double *Zs = calloc (gridSize * gridSize, sizeof (double));
+    double stepX = 8.0 / (gridSize - 1);
+    double stepY = 12.0 / (gridSize - 1);
+
+    double x = -4;
+    double y = -6;
+
+    for (int row = 0; row < gridSize; ++row)
+    {
+        for (int col = 0; col < gridSize; ++col)
+        {
+            Zs[row * gridSize + col] = GFunction (x, y);
+            y += stepY;
+        }
+
+        y = -6;
+        x += stepX;
+    }
+
+    printf ("    Points of real function: ");
+    PrintPythonArray ("Zs", Zs, gridSize * gridSize);
+    printf ("\n");
+
+    for (int nodeSetIndex = 0; nodeSetIndex <= INTERPOLATION_RESULT_MUTE_AFTER; ++nodeSetIndex)
+    {
+        time_t totalTime = 0;
+        const int runCount = 5;
+
+        for (int runIndex = 0; runIndex < runCount; ++runIndex)
+        {
+            double **xRes;
+            time_t begin = clock ();
+            BiCubicSpline (GFunction, -4, 4, -6, 6, interpolationNodeSet[nodeSetIndex] + 1, &xRes);
+            totalTime += clock () - begin;
+
+            x = -4;
+            y = -6;
+
+            for (int row = 0; row < gridSize; ++row)
+            {
+                for (int col = 0; col < gridSize; ++col)
+                {
+                    Zs[row * gridSize + col] = BiCubicSplineCalculate(
+                        x, y, -4, 4, -6, 6, interpolationNodeSet[nodeSetIndex] + 1, xRes);
+                    y += stepY;
+                }
+
+                y = -6;
+                x += stepX;
+            }
+
+            if (runIndex == 0)
+            {
+                printf ("    Points for %dx%d split mesh: ",
+                        interpolationNodeSet[nodeSetIndex], interpolationNodeSet[nodeSetIndex]);
+                PrintPythonArray ("Zs", Zs, gridSize * gridSize);
+                printf ("\n");
+            }
+
+            for (int index = 0; index < interpolationNodeSet[nodeSetIndex] * 4; ++index)
+            {
+                free(xRes[index]);
+            }
+
+            free (xRes);
+        }
+
+        bicubicInterpolationAverageTimeMs[nodeSetIndex] =
+            ((double) totalTime / runCount) / (CLOCKS_PER_SEC / 1000.0);
+    }
+}
+
 void PrintReport (FILE *output)
 {
     fprintf (output, "#1\n");
@@ -778,6 +883,13 @@ void PrintReport (FILE *output)
     {
         fprintf (output, "    Average bilagrange interpolation time for %d nodes: %lfms.\n",
                  interpolationNodeSet[index], biLagrangeInterpolationAverageTimeMs[index]);
+    }
+
+    fprintf (output, "#10\n");
+    for (int index = 0; index < INTERPOLATION_NODE_SET_COUNT; ++index)
+    {
+        fprintf (output, "    Average bicubicinterpolation time for %d split: %lfms.\n",
+                 interpolationNodeSet[index], bicubicInterpolationAverageTimeMs[index]);
     }
 
     fprintf (output, "#11\n");
@@ -854,6 +966,7 @@ int main ()
     DoBiLagrange ();
     DoIntegrals ();
     DoRungeRule ();
+    DoBiCubic ();
 
     PrintReport (stdout);
     FILE *report = fopen ("report.txt", "w");

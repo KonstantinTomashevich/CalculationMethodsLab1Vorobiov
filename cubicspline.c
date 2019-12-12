@@ -6,7 +6,6 @@ void CubicSpline (double (*F) (double), double min, double max, int splineCount,
 {
     double *x = malloc (sizeof (double) * (splineCount + 1));
     double *y = malloc (sizeof (double) * (splineCount + 1));
-    *output = malloc (sizeof (double) * splineCount * 4); // for each spline -- (a, b, c, d)
 
     double step = (max - min) / splineCount;
     for (int index = 0; index <= splineCount; ++index)
@@ -15,6 +14,14 @@ void CubicSpline (double (*F) (double), double min, double max, int splineCount,
         y[index] = F (x[index]);
     }
 
+    CubicSplineForEquidistantPoints (y, step, splineCount, output);
+    free (x);
+    free (y);
+}
+
+void CubicSplineForEquidistantPoints (const double *y, double step, int splineCount, double **output)
+{
+    *output = malloc (sizeof (double) * splineCount * 4); // for each spline -- (a, b, c, d)
     double *d = malloc (sizeof (double) * (splineCount + 1));
     double *b = malloc (sizeof (double) * (splineCount + 1));
 
@@ -68,9 +75,6 @@ void CubicSpline (double (*F) (double), double min, double max, int splineCount,
     }
 
     (*output)[2] = 0.0;
-
-    free (x);
-    free (y);
     free (d);
     free (b);
 }
