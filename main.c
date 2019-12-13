@@ -725,8 +725,9 @@ void DoRungeRule ()
         {
             time_t begin = clock ();
             rungeNewtonI[newtonPowerIndex] = RungeRule (NewtonIntegral, Function,
-                                                        newtonPowers[newtonPowerIndex], -4, 4,
-                                                        epsilon, rungeNewtonPartitions + newtonPowerIndex);
+                                                        newtonPowers[newtonPowerIndex],
+                                                        newtonPowers[newtonPowerIndex] + 1,
+                                                        -4, 4, epsilon, rungeNewtonPartitions + newtonPowerIndex);
             rungeNewtonAverageMs[newtonPowerIndex] += (clock () - begin) * 1.0 / runCount;
         }
 
@@ -734,8 +735,10 @@ void DoRungeRule ()
         {
             time_t begin = clock ();
             rungeGaussianI[gaussianPowerIndex] = RungeRule (GaussianIntegral, Function,
-                                                            gaussianPowers[gaussianPowerIndex], -4, 4,
-                                                            epsilon, rungeGaussianPartitions + gaussianPowerIndex);
+                                                            gaussianPowers[gaussianPowerIndex],
+                                                            gaussianPowers[gaussianPowerIndex] * 2,
+                                                            -4, 4,  epsilon,
+                                                            rungeGaussianPartitions + gaussianPowerIndex);
             rungeGaussianAverageMs[gaussianPowerIndex] += (clock () - begin) * 1.0 / runCount;
         }
     }
@@ -958,15 +961,15 @@ int main ()
 
     printf ("Python support code:\n%s\n", pythonSupportCode);
 
-    DoDifferentialInterpolation ();
-    DoChebyshevDifferentialInterpolation ();
-    DoCubicSpline ();
-    DoBezier ();
-    DoQuadraticRegression ();
-    DoBiLagrange ();
-    DoIntegrals ();
+    //DoDifferentialInterpolation ();
+    //DoChebyshevDifferentialInterpolation ();
+    //DoCubicSpline ();
+    //DoBezier ();
+    //DoQuadraticRegression ();
+    //DoBiLagrange ();
+    //DoIntegrals ();
     DoRungeRule ();
-    DoBiCubic ();
+    //DoBiCubic ();
 
     PrintReport (stdout);
     FILE *report = fopen ("report.txt", "w");
