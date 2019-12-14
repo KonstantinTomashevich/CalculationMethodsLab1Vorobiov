@@ -3,11 +3,13 @@
 #include <stdio.h>
 
 double RungeRule (double (*Integrator) (double (*) (double), int, double, double, long),
-                  double (*F) (double), int power, int accuracy, double a, double b, double epsilon, unsigned long *resultParts)
+                  double (*F) (double), int power, int accuracy, double a, double b, double epsilon,
+                  unsigned long *resultParts, unsigned long *rungeSteps)
 {
     char firstRun = 1;
     unsigned long firstParts = 1;
     unsigned long previousFirstParts = 1;
+    unsigned long steps = 1;
 
     double first;
     double second;
@@ -20,10 +22,13 @@ double RungeRule (double (*Integrator) (double (*) (double), int, double, double
     {
         if (!firstRun)
         {
+            ++steps;
             double nextH = pow (epsilon / c, 1.0 / accuracy);
+
             if (!isfinite (nextH))
             {
                 printf ("Error, next step became too small! Returning last correct result...\n");
+                *rungeSteps = steps - 1;
                 return first;
             }
 
@@ -42,6 +47,7 @@ double RungeRule (double (*Integrator) (double (*) (double), int, double, double
         {
             printf ("Found accuracy degradation! Returning last correct result...\n");
             *resultParts = previousFirstParts;
+            *rungeSteps = steps;
             return Integrator (F, power, a, b, previousFirstParts);
         }
 
@@ -49,5 +55,6 @@ double RungeRule (double (*Integrator) (double (*) (double), int, double, double
     } while (c * pow (h, accuracy) > epsilon);
 
     *resultParts = firstParts;
+    *rungeSteps = steps;
     return first;
 }

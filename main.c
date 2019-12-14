@@ -28,7 +28,8 @@
 
 #define I 4.967532679086564
 
-#define INTEGRAL_STEP_POWERS 22
+// FIXME: Doing now only up to 9, must do up to 21!
+#define INTEGRAL_STEP_POWERS 10
 
 #define NEWTON_POWERS_COUNT 6
 
@@ -181,7 +182,11 @@ double rungeGaussianAverageMs[INTEGRAL_STEP_POWERS * GAUSSIAN_POWERS_COUNT] = {0
 
 unsigned long rungeNewtonPartitions[NEWTON_POWERS_COUNT] = {0};
 
+unsigned long rungeNewtonSteps[NEWTON_POWERS_COUNT] = {0};
+
 unsigned long rungeGaussianPartitions[GAUSSIAN_POWERS_COUNT] = {0};
+
+unsigned long rungeGaussianSteps[GAUSSIAN_POWERS_COUNT] = {0};
 
 double Function (double x)
 {
@@ -655,8 +660,7 @@ void DoIntegrals ()
     const int runCount = 10;
     long parts = 1;
 
-    // FIXME: Doing now only up to 11, must do up to 21!
-    for (int i = 0; i < 9; ++i)
+    for (int i = 0; i < INTEGRAL_STEP_POWERS; ++i)
     {
         printf ("Integral parts: %ld\n", parts);
         for (int run = 0; run < runCount; ++run)
@@ -716,18 +720,21 @@ void DoIntegrals ()
 
 void DoRungeRule ()
 {
+    printf ("Running with Runge rule...\n");
     const int runCount = 10;
-    const double epsilon = pow (10, -15);
+    const double epsilon = pow (10, -14);
 
     for (int run = 0; run < runCount; ++run)
     {
+        printf ("    Iteration %d...\n", run);
         for (int newtonPowerIndex = 0; newtonPowerIndex < NEWTON_POWERS_COUNT; ++newtonPowerIndex)
         {
             time_t begin = clock ();
             rungeNewtonI[newtonPowerIndex] = RungeRule (NewtonIntegral, Function,
                                                         newtonPowers[newtonPowerIndex],
-                                                        newtonPowers[newtonPowerIndex] + 1,
-                                                        -4, 4, epsilon, rungeNewtonPartitions + newtonPowerIndex);
+                                                        newtonPowers[newtonPowerIndex], -4, 4, epsilon,
+                                                        rungeNewtonPartitions + newtonPowerIndex,
+                                                        rungeNewtonSteps + newtonPowerIndex);
             rungeNewtonAverageMs[newtonPowerIndex] += (clock () - begin) * 1.0 / runCount;
         }
 
@@ -736,9 +743,9 @@ void DoRungeRule ()
             time_t begin = clock ();
             rungeGaussianI[gaussianPowerIndex] = RungeRule (GaussianIntegral, Function,
                                                             gaussianPowers[gaussianPowerIndex],
-                                                            gaussianPowers[gaussianPowerIndex] * 2,
-                                                            -4, 4,  epsilon,
-                                                            rungeGaussianPartitions + gaussianPowerIndex);
+                                                            gaussianPowers[gaussianPowerIndex] * 2, -4, 4,  epsilon,
+                                                            rungeGaussianPartitions + gaussianPowerIndex,
+                                                            rungeGaussianSteps + gaussianPowerIndex);
             rungeGaussianAverageMs[gaussianPowerIndex] += (clock () - begin) * 1.0 / runCount;
         }
     }
@@ -771,10 +778,10 @@ void DoBiCubic ()
     PrintPythonArray ("Zs", Zs, gridSize * gridSize);
     printf ("\n");
 
-    for (int nodeSetIndex = 0; nodeSetIndex <= INTERPOLATION_RESULT_MUTE_AFTER; ++nodeSetIndex)
+    for (int nodeSetIndex = 0; nodeSetIndex < INTERPOLATION_NODE_SET_COUNT; ++nodeSetIndex)
     {
         time_t totalTime = 0;
-        const int runCount = 5;
+        const int runCount = 10;
 
         for (int runIndex = 0; runIndex < runCount; ++runIndex)
         {
@@ -882,7 +889,7 @@ void PrintReport (FILE *output)
     }
 
     fprintf (output, "#9\n");
-    for (int index = 0; index < INTERPOLATION_NODE_SET_COUNT; ++index)
+    for (int index = 0; index <= INTERPOLATION_RESULT_MUTE_AFTER; ++index)
     {
         fprintf (output, "    Average bilagrange interpolation time for %d nodes: %lfms.\n",
                  interpolationNodeSet[index], biLagrangeInterpolationAverageTimeMs[index]);
@@ -939,6 +946,8 @@ void PrintReport (FILE *output)
                  newtonPowers[newtonIndex], rungeNewtonAverageMs[newtonIndex]);
         fprintf (output, "    Runge Newton power %d partitions: %ld.\n",
                  newtonPowers[newtonIndex], rungeNewtonPartitions[newtonIndex]);
+        fprintf (output, "    Runge Newton power %d steps: %ld.\n",
+                 newtonPowers[newtonIndex], rungeNewtonSteps[newtonIndex]);
     }
 
     for (int gaussianIndex = 0; gaussianIndex < GAUSSIAN_POWERS_COUNT; ++gaussianIndex)
@@ -949,6 +958,8 @@ void PrintReport (FILE *output)
                  gaussianPowers[gaussianIndex], rungeGaussianAverageMs[gaussianIndex]);
         fprintf (output, "    Runge Gaussian power %d partitions: %ld.\n",
                  gaussianPowers[gaussianIndex], rungeGaussianPartitions[gaussianIndex]);
+        fprintf (output, "    Runge Gaussian power %d steps: %ld.\n",
+                 gaussianPowers[gaussianIndex], rungeGaussianSteps[gaussianIndex]);
     }
 }
 
@@ -961,15 +972,15 @@ int main ()
 
     printf ("Python support code:\n%s\n", pythonSupportCode);
 
-    //DoDifferentialInterpolation ();
-    //DoChebyshevDifferentialInterpolation ();
-    //DoCubicSpline ();
-    //DoBezier ();
-    //DoQuadraticRegression ();
-    //DoBiLagrange ();
-    //DoIntegrals ();
+    DoDifferentialInterpolation ();
+    DoChebyshevDifferentialInterpolation ();
+    DoCubicSpline ();
+    DoBezier ();
+    DoQuadraticRegression ();
+    DoBiLagrange ();
+    DoIntegrals ();
     DoRungeRule ();
-    //DoBiCubic ();
+    DoBiCubic ();
 
     PrintReport (stdout);
     FILE *report = fopen ("report.txt", "w");
