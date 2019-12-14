@@ -1,31 +1,461 @@
 #1
-    Power method min error normal:   0.0000000000000003.
-    Power method max error normal:  75.6064786021455150.
-    Power method average error normal:  11.3263001962471800.
-    Power method average time: 9ms.
-
-#2
-    QR algorithm average iterations: 1918.
-    QR algorithm average time: 25ms.
-
-#3
     Bisection result segment 0: [ -1.9519531250000002;  -1.9518554687500003].
     Bisection result segment 1: [ -1.1358398437499999;  -1.1357421874999998].
     Bisection result segment 2: [  1.9518554687500003;   1.9519531250000002].
     Bisection steps: 12.
-#4
-    Discrete newton result segment 0:    -1.9519125752999189.
+#2
+    Discrete newton result segment 0:    -1.9519126405979392.
     Discrete newton steps: 5.
-    Discrete newton result segment 1:    -1.1357567044695389.
+    Discrete newton result segment 1:    -1.1357566443218374.
     Discrete newton steps: 4.
-    Discrete newton result segment 2:     1.9519145740760813.
-    Discrete newton steps: 5.
+    Discrete newton result segment 2:     1.9519146383835093.
+    Discrete newton steps: 4.
     Discrete newton failures: 0.
-#5
-    Newton result segment 0:    -1.9519125752999189.
-    Newton steps: 4.
-    Newton result segment 1:    -1.1357567044695389.
+#3
+    Newton result segment 0:    -1.9519126405979392.
     Newton steps: 3.
-    Newton result segment 2:     1.9519145740760813.
+    Newton result segment 1:    -1.1357566443218374.
+    Newton steps: 3.
+    Newton result segment 2:     1.9519146383835095.
     Newton steps: 3.
     Newton failures: 0.
+#4
+    Average interpolation time for 6 nodes: 0.000000ms.
+    Average interpolation time for 12 nodes: 0.000000ms.
+    Average interpolation time for 18 nodes: 0.000000ms.
+    Average interpolation time for 500 nodes: 0.900000ms.
+    Average interpolation time for 1000 nodes: 3.050000ms.
+#5
+    Average Chebyshev interpolation time for 6 nodes: 0.000000ms.
+    Average Chebyshev interpolation time for 12 nodes: 0.000000ms.
+    Average Chebyshev interpolation time for 18 nodes: 0.000000ms.
+    Average Chebyshev interpolation time for 500 nodes: 0.850000ms.
+    Average Chebyshev interpolation time for 1000 nodes: 3.100000ms.
+#6
+    Average cubic interpolation time for 6 nodes: 0.000000ms.
+    Average cubic interpolation time for 12 nodes: 0.000000ms.
+    Average cubic interpolation time for 18 nodes: 0.000000ms.
+    Average cubic interpolation time for 500 nodes: 0.100000ms.
+    Average cubic interpolation time for 1000 nodes: 0.200000ms.
+#7
+    Bezier interpolation time for 40 nodes: 0.100000ms.
+#8
+    Average quadratic regression time for power 1: 0.000000ms.
+    Average quadratic regression time for power 2: 0.000000ms.
+    Average quadratic regression time for power 3: 0.100000ms.
+    Average quadratic regression time for power 4: 0.000000ms.
+    Average quadratic regression time for power 5: 0.000000ms.
+    Average quadratic regression time for power 6: 0.100000ms.
+    Average quadratic regression time for power 9: 0.100000ms.
+    Average quadratic regression time for power 12: 0.100000ms.
+    Average quadratic regression time for power 15: 0.100000ms.
+#9
+    Average bilagrange interpolation time for 6 nodes: 0.600000ms.
+    Average bilagrange interpolation time for 12 nodes: 5.200000ms.
+    Average bilagrange interpolation time for 18 nodes: 17.600000ms.
+#10
+    Average bicubicinterpolation time for 6 split: 0.000000ms.
+    Average bicubicinterpolation time for 12 split: 0.200000ms.
+    Average bicubicinterpolation time for 18 split: 0.200000ms.
+    Average bicubicinterpolation time for 500 split: 107.800000ms.
+    Average bicubicinterpolation time for 1000 split: 442.700000ms.
+#11
+    Power: 0.
+        Left rectangle difference:     4.7268156286589909.
+        Right rectangle difference:     5.2082551193069939.
+        Medium rectangle difference:    20.1652085496317820.
+        Trapezium difference:     4.9675353739829928.
+        Simpson difference:    11.7876272417601910.
+        Left rectangle time:     0.0000000000000000ms.
+        Right rectangle time:     0.0000000000000000ms.
+        Medium rectangle time:     0.0000000000000000ms.
+        Trapezium time:     0.0000000000000000ms.
+        Simpson time:     0.0000000000000000ms.
+        Newton power 5 difference:     1.6291467327769591.
+        Newton power 5 time:     0.0000000000000000ms.
+        Newton power 7 difference:     3.3079566794564448.
+        Newton power 7 time:     0.0000000000000000ms.
+        Newton power 9 difference:     3.7256926590795221.
+        Newton power 9 time:     0.0000000000000000ms.
+        Newton power 11 difference:     3.3486616389689710.
+        Newton power 11 time:     0.0000000000000000ms.
+        Newton power 13 difference:     1.8597119874083559.
+        Newton power 13 time:     0.0000000000000000ms.
+        Newton power 15 difference:     1.4838060620271851.
+        Newton power 15 time:     0.0000000000000000ms.
+        Gaussian power 2 difference:     5.0004856265152950.
+        Gaussian power 2 time:     0.0000000000000000ms.
+        Gaussian power 3 difference:     6.2019027344025899.
+        Gaussian power 3 time:     0.0000000000000000ms.
+        Gaussian power 4 difference:     3.6780246284969715.
+        Gaussian power 4 time:     0.0000000000000000ms.
+        Gaussian power 5 difference:     2.1629230588402635.
+        Gaussian power 5 time:     0.0000000000000000ms.
+        Gaussian power 6 difference:     1.2003018432868169.
+        Gaussian power 6 time:     0.0000000000000000ms.
+        Gaussian power 7 difference:     0.4741913704343403.
+        Gaussian power 7 time:     0.0000000000000000ms.
+    Power: 1.
+        Left rectangle difference:     1.3669403137608089.
+        Right rectangle difference:     1.2465804410988079.
+        Medium rectangle difference:     1.4124471875815789.
+        Trapezium difference:     1.3067603774298080.
+        Simpson difference:     0.5060446659111175.
+        Left rectangle time:     0.0000000000000000ms.
+        Right rectangle time:     0.0000000000000000ms.
+        Medium rectangle time:     0.0000000000000000ms.
+        Trapezium time:     0.0000000000000000ms.
+        Simpson time:     0.0000000000000000ms.
+        Newton power 5 difference:     0.0524370662465135.
+        Newton power 5 time:     0.0000000000000000ms.
+        Newton power 7 difference:     0.0071767035496535.
+        Newton power 7 time:     0.0000000000000000ms.
+        Newton power 9 difference:     0.0004869890856449.
+        Newton power 9 time:     0.0000000000000000ms.
+        Newton power 11 difference:     0.0001073987574651.
+        Newton power 11 time:     0.0000000000000000ms.
+        Newton power 13 difference:     0.0000309542329031.
+        Newton power 13 time:     0.0000000000000000ms.
+        Newton power 15 difference:     0.0000011581075636.
+        Newton power 15 time:     0.0000000000000000ms.
+        Gaussian power 2 difference:     0.3756933391516819.
+        Gaussian power 2 time:     0.0000000000000000ms.
+        Gaussian power 3 difference:     0.0569868552983044.
+        Gaussian power 3 time:     0.0000000000000000ms.
+        Gaussian power 4 difference:     0.0065483357175369.
+        Gaussian power 4 time:     0.0000000000000000ms.
+        Gaussian power 5 difference:     0.0003295319584486.
+        Gaussian power 5 time:     0.0000000000000000ms.
+        Gaussian power 6 difference:     0.0000437862027889.
+        Gaussian power 6 time:     0.0000000000000000ms.
+        Gaussian power 7 difference:     0.0000086943694084.
+        Gaussian power 7 time:     0.0000000000000000ms.
+    Power: 2.
+        Left rectangle difference:     0.0149831013037742.
+        Right rectangle difference:     0.0151068668617249.
+        Medium rectangle difference:     0.0000619348406472.
+        Trapezium difference:     0.0000618827789740.
+        Simpson difference:     0.0000206623007717.
+        Left rectangle time:     0.0000000000000000ms.
+        Right rectangle time:     0.1000000000000000ms.
+        Medium rectangle time:     0.0000000000000000ms.
+        Trapezium time:     0.0000000000000000ms.
+        Simpson time:     0.0000000000000000ms.
+        Newton power 5 difference:     0.0000013770854270.
+        Newton power 5 time:     0.0000000000000000ms.
+        Newton power 7 difference:     0.0000000737728794.
+        Newton power 7 time:     0.0000000000000000ms.
+        Newton power 9 difference:     0.0000000028492595.
+        Newton power 9 time:     0.0000000000000000ms.
+        Newton power 11 difference:     0.0000000000815303.
+        Newton power 11 time:     0.0000000000000000ms.
+        Newton power 13 difference:     0.0000000000017799.
+        Newton power 13 time:     0.0000000000000000ms.
+        Newton power 15 difference:     0.0000000000000160.
+        Newton power 15 time:     0.0000000000000000ms.
+        Gaussian power 2 difference:     0.0000149148639670.
+        Gaussian power 2 time:     0.0000000000000000ms.
+        Gaussian power 3 difference:     0.0000013914612662.
+        Gaussian power 3 time:     0.0000000000000000ms.
+        Gaussian power 4 difference:     0.0000000661725927.
+        Gaussian power 4 time:     0.0000000000000000ms.
+        Gaussian power 5 difference:     0.0000000019082584.
+        Gaussian power 5 time:     0.0000000000000000ms.
+        Gaussian power 6 difference:     0.0000000000369385.
+        Gaussian power 6 time:     0.0000000000000000ms.
+        Gaussian power 7 difference:     0.0000000000005080.
+        Gaussian power 7 time:     0.0000000000000000ms.
+    Power: 3.
+        Left rectangle difference:     0.0037612528105537.
+        Right rectangle difference:     0.0037612392308226.
+        Medium rectangle difference:     0.0000000033588643.
+        Trapezium difference:     0.0000000067898656.
+        Simpson difference:     0.0000000000240483.
+        Left rectangle time:     0.0000000000000000ms.
+        Right rectangle time:     0.0000000000000000ms.
+        Medium rectangle time:     0.0000000000000000ms.
+        Trapezium time:     0.0000000000000000ms.
+        Simpson time:     0.1000000000000000ms.
+        Newton power 5 difference:     0.0000000000000187.
+        Newton power 5 time:     0.0000000000000000ms.
+        Newton power 7 difference:     0.0000000000000107.
+        Newton power 7 time:     0.0000000000000000ms.
+        Newton power 9 difference:     0.0000000000000115.
+        Newton power 9 time:     0.0000000000000000ms.
+        Newton power 11 difference:     0.0000000000000018.
+        Newton power 11 time:     0.0000000000000000ms.
+        Newton power 13 difference:     0.0000000000000044.
+        Newton power 13 time:     0.0000000000000000ms.
+        Newton power 15 difference:     0.0000000000000000.
+        Newton power 15 time:     0.0000000000000000ms.
+        Gaussian power 2 difference:     0.0000000000160085.
+        Gaussian power 2 time:     0.0000000000000000ms.
+        Gaussian power 3 difference:     0.0000000000000231.
+        Gaussian power 3 time:     0.0000000000000000ms.
+        Gaussian power 4 difference:     0.0000000000000009.
+        Gaussian power 4 time:     0.0000000000000000ms.
+        Gaussian power 5 difference:     0.0000000000000009.
+        Gaussian power 5 time:     0.1000000000000000ms.
+        Gaussian power 6 difference:     0.0000000000000018.
+        Gaussian power 6 time:     0.0000000000000000ms.
+        Gaussian power 7 difference:     0.0000000000000044.
+        Gaussian power 7 time:     0.0000000000000000ms.
+    Power: 4.
+        Left rectangle difference:     0.0009403119351878.
+        Right rectangle difference:     0.0009403110751558.
+        Medium rectangle difference:     0.0000000002148699.
+        Trapezium difference:     0.0000000004300240.
+        Simpson difference:     0.0000000000000941.
+        Left rectangle time:     0.0000000000000000ms.
+        Right rectangle time:     0.1000000000000000ms.
+        Medium rectangle time:     0.0000000000000000ms.
+        Trapezium time:     0.1000000000000000ms.
+        Simpson time:     0.1000000000000000ms.
+        Newton power 5 difference:     0.0000000000000258.
+        Newton power 5 time:     0.1000000000000000ms.
+        Newton power 7 difference:     0.0000000000000009.
+        Newton power 7 time:     0.0000000000000000ms.
+        Newton power 9 difference:     0.0000000000000009.
+        Newton power 9 time:     0.0000000000000000ms.
+        Newton power 11 difference:     0.0000000000000044.
+        Newton power 11 time:     0.1000000000000000ms.
+        Newton power 13 difference:     0.0000000000000071.
+        Newton power 13 time:     0.1000000000000000ms.
+        Newton power 15 difference:     0.0000000000000160.
+        Newton power 15 time:     0.0000000000000000ms.
+        Gaussian power 2 difference:     0.0000000000000711.
+        Gaussian power 2 time:     0.0000000000000000ms.
+        Gaussian power 3 difference:     0.0000000000000027.
+        Gaussian power 3 time:     0.0000000000000000ms.
+        Gaussian power 4 difference:     0.0000000000000044.
+        Gaussian power 4 time:     0.1000000000000000ms.
+        Gaussian power 5 difference:     0.0000000000000089.
+        Gaussian power 5 time:     0.0000000000000000ms.
+        Gaussian power 6 difference:     0.0000000000000044.
+        Gaussian power 6 time:     0.0000000000000000ms.
+        Gaussian power 7 difference:     0.0000000000000009.
+        Gaussian power 7 time:     0.0000000000000000ms.
+    Power: 5.
+        Left rectangle difference:     0.0002350779032065.
+        Right rectangle difference:     0.0002350778493794.
+        Medium rectangle difference:     0.0000000000134550.
+        Trapezium difference:     0.0000000000269091.
+        Simpson difference:     0.0000000000000027.
+        Left rectangle time:     0.2000000000000000ms.
+        Right rectangle time:     0.2000000000000000ms.
+        Medium rectangle time:     0.1000000000000000ms.
+        Trapezium time:     0.4000000000000000ms.
+        Simpson time:     0.4999999999999999ms.
+        Newton power 5 difference:     0.0000000000000053.
+        Newton power 5 time:     0.1000000000000000ms.
+        Newton power 7 difference:     0.0000000000000036.
+        Newton power 7 time:     0.1000000000000000ms.
+        Newton power 9 difference:     0.0000000000000187.
+        Newton power 9 time:     0.2000000000000000ms.
+        Newton power 11 difference:     0.0000000000000560.
+        Newton power 11 time:     0.2000000000000000ms.
+        Newton power 13 difference:     0.0000000000000595.
+        Newton power 13 time:     0.2000000000000000ms.
+        Newton power 15 difference:     0.0000000000000284.
+        Newton power 15 time:     0.2000000000000000ms.
+        Gaussian power 2 difference:     0.0000000000000053.
+        Gaussian power 2 time:     0.1000000000000000ms.
+        Gaussian power 3 difference:     0.0000000000000195.
+        Gaussian power 3 time:     0.0000000000000000ms.
+        Gaussian power 4 difference:     0.0000000000000062.
+        Gaussian power 4 time:     0.1000000000000000ms.
+        Gaussian power 5 difference:     0.0000000000000098.
+        Gaussian power 5 time:     0.1000000000000000ms.
+        Gaussian power 6 difference:     0.0000000000000098.
+        Gaussian power 6 time:     0.1000000000000000ms.
+        Gaussian power 7 difference:     0.0000000000000089.
+        Gaussian power 7 time:     0.1000000000000000ms.
+    Power: 6.
+        Left rectangle difference:     0.0000587694707752.
+        Right rectangle difference:     0.0000587694673717.
+        Medium rectangle difference:     0.0000000000008376.
+        Trapezium difference:     0.0000000000016787.
+        Simpson difference:     0.0000000000000115.
+        Left rectangle time:     0.7000000000000000ms.
+        Right rectangle time:     0.7000000000000000ms.
+        Medium rectangle time:     0.7000000000000000ms.
+        Trapezium time:     1.4000000000000001ms.
+        Simpson time:     2.0000000000000000ms.
+        Newton power 5 difference:     0.0000000000000107.
+        Newton power 5 time:     0.3000000000000000ms.
+        Newton power 7 difference:     0.0000000000000639.
+        Newton power 7 time:     0.5000000000000000ms.
+        Newton power 9 difference:     0.0000000000000062.
+        Newton power 9 time:     0.7000000000000000ms.
+        Newton power 11 difference:     0.0000000000002540.
+        Newton power 11 time:     0.7000000000000000ms.
+        Newton power 13 difference:     0.0000000000000959.
+        Newton power 13 time:     0.9000000000000000ms.
+        Newton power 15 difference:     0.0000000000000924.
+        Newton power 15 time:     1.0000000000000000ms.
+        Gaussian power 2 difference:     0.0000000000000098.
+        Gaussian power 2 time:     0.2000000000000000ms.
+        Gaussian power 3 difference:     0.0000000000000231.
+        Gaussian power 3 time:     0.2000000000000000ms.
+        Gaussian power 4 difference:     0.0000000000000080.
+        Gaussian power 4 time:     0.3000000000000000ms.
+        Gaussian power 5 difference:     0.0000000000000204.
+        Gaussian power 5 time:     0.3000000000000000ms.
+        Gaussian power 6 difference:     0.0000000000000053.
+        Gaussian power 6 time:     0.4000000000000000ms.
+        Gaussian power 7 difference:     0.0000000000000844.
+        Gaussian power 7 time:     0.5000000000000000ms.
+    Power: 7.
+        Left rectangle difference:     0.0000146923673512.
+        Right rectangle difference:     0.0000146923671869.
+        Medium rectangle difference:     0.0000000000000400.
+        Trapezium difference:     0.0000000000001030.
+        Simpson difference:     0.0000000000000080.
+        Left rectangle time:     2.7999999999999998ms.
+        Right rectangle time:     2.7999999999999998ms.
+        Medium rectangle time:     2.7999999999999998ms.
+        Trapezium time:     5.3000000000000007ms.
+        Simpson time:     9.2000000000000011ms.
+        Newton power 5 difference:     0.0000000000001057.
+        Newton power 5 time:     1.5000000000000000ms.
+        Newton power 7 difference:     0.0000000000003064.
+        Newton power 7 time:     2.1000000000000001ms.
+        Newton power 9 difference:     0.0000000000001368.
+        Newton power 9 time:     2.3999999999999999ms.
+        Newton power 11 difference:     0.0000000000009424.
+        Newton power 11 time:     3.1000000000000001ms.
+        Newton power 13 difference:     0.0000000000004263.
+        Newton power 13 time:     3.5000000000000000ms.
+        Newton power 15 difference:     0.0000000000006946.
+        Newton power 15 time:     4.2000000000000002ms.
+        Gaussian power 2 difference:     0.0000000000000222.
+        Gaussian power 2 time:     0.7000000000000000ms.
+        Gaussian power 3 difference:     0.0000000000000702.
+        Gaussian power 3 time:     1.0000000000000000ms.
+        Gaussian power 4 difference:     0.0000000000000231.
+        Gaussian power 4 time:     1.1000000000000001ms.
+        Gaussian power 5 difference:     0.0000000000000044.
+        Gaussian power 5 time:     1.3999999999999999ms.
+        Gaussian power 6 difference:     0.0000000000000453.
+        Gaussian power 6 time:     1.8999999999999999ms.
+        Gaussian power 7 difference:     0.0000000000000417.
+        Gaussian power 7 time:     2.2000000000000002ms.
+    Power: 8.
+        Left rectangle difference:     0.0000036730918653.
+        Right rectangle difference:     0.0000036730917685.
+        Medium rectangle difference:     0.0000000000000222.
+        Trapezium difference:     0.0000000000000471.
+        Simpson difference:     0.0000000000000329.
+        Left rectangle time:    12.1999999999999980ms.
+        Right rectangle time:    11.6999999999999980ms.
+        Medium rectangle time:    11.2999999999999990ms.
+        Trapezium time:    22.8000000000000010ms.
+        Simpson time:    34.1999999999999960ms.
+        Newton power 5 difference:     0.0000000000001616.
+        Newton power 5 time:     5.4000000000000004ms.
+        Newton power 7 difference:     0.0000000000008615.
+        Newton power 7 time:     7.7999999999999998ms.
+        Newton power 9 difference:     0.0000000000000320.
+        Newton power 9 time:    10.3000000000000010ms.
+        Newton power 11 difference:     0.0000000000040847.
+        Newton power 11 time:    12.6999999999999990ms.
+        Newton power 13 difference:     0.0000000000017719.
+        Newton power 13 time:    15.4000000000000000ms.
+        Newton power 15 difference:     0.0000000000005596.
+        Newton power 15 time:    18.3999999999999990ms.
+        Gaussian power 2 difference:     0.0000000000000346.
+        Gaussian power 2 time:     2.3999999999999999ms.
+        Gaussian power 3 difference:     0.0000000000001137.
+        Gaussian power 3 time:     3.3999999999999999ms.
+        Gaussian power 4 difference:     0.0000000000000204.
+        Gaussian power 4 time:     4.7000000000000002ms.
+        Gaussian power 5 difference:     0.0000000000000560.
+        Gaussian power 5 time:     6.0999999999999996ms.
+        Gaussian power 6 difference:     0.0000000000002007.
+        Gaussian power 6 time:     6.4000000000000004ms.
+        Gaussian power 7 difference:     0.0000000000001936.
+        Gaussian power 7 time:     7.5999999999999996ms.
+    Power: 9.
+        Left rectangle difference:     0.0000009182729741.
+        Right rectangle difference:     0.0000009182729350.
+        Medium rectangle difference:     0.0000000000001767.
+        Trapezium difference:     0.0000000000000018.
+        Simpson difference:     0.0000000000000648.
+        Left rectangle time:    45.5999999999999940ms.
+        Right rectangle time:    43.6999999999999960ms.
+        Medium rectangle time:    44.0000000000000000ms.
+        Trapezium time:    86.7999999999999970ms.
+        Simpson time:   130.9000000000000100ms.
+        Newton power 5 difference:     0.0000000000002469.
+        Newton power 5 time:    21.8999999999999990ms.
+        Newton power 7 difference:     0.0000000000041842.
+        Newton power 7 time:    30.8999999999999990ms.
+        Newton power 9 difference:     0.0000000000003686.
+        Newton power 9 time:    40.2999999999999970ms.
+        Newton power 11 difference:     0.0000000000176916.
+        Newton power 11 time:    48.0000000000000000ms.
+        Newton power 13 difference:     0.0000000000078408.
+        Newton power 13 time:    56.6000000000000010ms.
+        Newton power 15 difference:     0.0000000000083569.
+        Newton power 15 time:    65.9000000000000060ms.
+        Gaussian power 2 difference:     0.0000000000001075.
+        Gaussian power 2 time:     8.8000000000000007ms.
+        Gaussian power 3 difference:     0.0000000000000302.
+        Gaussian power 3 time:    13.0000000000000000ms.
+        Gaussian power 4 difference:     0.0000000000001004.
+        Gaussian power 4 time:    17.1999999999999990ms.
+        Gaussian power 5 difference:     0.0000000000003713.
+        Gaussian power 5 time:    21.8999999999999990ms.
+        Gaussian power 6 difference:     0.0000000000000027.
+        Gaussian power 6 time:    26.6000000000000010ms.
+        Gaussian power 7 difference:     0.0000000000001661.
+        Gaussian power 7 time:    31.6999999999999990ms.
+#12
+    Runge Newton power 5 difference:     0.0000000000000222.
+    Runge Newton power 5 time:     4.3999999999999995ms.
+    Runge Newton power 5 partitions: 652.
+    Runge Newton power 5 steps: 3.
+    Runge Newton power 7 difference:     0.0000000000000178.
+    Runge Newton power 7 time:     0.9999999999999999ms.
+    Runge Newton power 7 partitions: 138.
+    Runge Newton power 7 steps: 3.
+    Runge Newton power 9 difference:     0.0000000000000018.
+    Runge Newton power 9 time:     0.1000000000000000ms.
+    Runge Newton power 9 partitions: 42.
+    Runge Newton power 9 steps: 2.
+    Runge Newton power 11 difference:     0.0000000000000080.
+    Runge Newton power 11 time:     0.4000000000000000ms.
+    Runge Newton power 11 partitions: 32.
+    Runge Newton power 11 steps: 3.
+    Runge Newton power 13 difference:     0.0000000000000071.
+    Runge Newton power 13 time:     0.2000000000000000ms.
+    Runge Newton power 13 partitions: 24.
+    Runge Newton power 13 steps: 3.
+    Runge Newton power 15 difference:     0.0000000000000044.
+    Runge Newton power 15 time:     0.3000000000000000ms.
+    Runge Newton power 15 partitions: 18.
+    Runge Newton power 15 steps: 3.
+    Runge Gaussian power 2 difference:     0.0000000000000471.
+    Runge Gaussian power 2 time:    23.0000000000000000ms.
+    Runge Gaussian power 2 partitions: 10714.
+    Runge Gaussian power 2 steps: 4.
+    Runge Gaussian power 3 difference:     0.0000000000000062.
+    Runge Gaussian power 3 time:     0.6000000000000000ms.
+    Runge Gaussian power 3 partitions: 288.
+    Runge Gaussian power 3 steps: 2.
+    Runge Gaussian power 4 difference:     0.0000000000000009.
+    Runge Gaussian power 4 time:     0.1000000000000000ms.
+    Runge Gaussian power 4 partitions: 66.
+    Runge Gaussian power 4 steps: 2.
+    Runge Gaussian power 5 difference:     0.0000000000000009.
+    Runge Gaussian power 5 time:     0.0000000000000000ms.
+    Runge Gaussian power 5 partitions: 35.
+    Runge Gaussian power 5 steps: 3.
+    Runge Gaussian power 6 difference:     0.0000000000000000.
+    Runge Gaussian power 6 time:     0.3000000000000000ms.
+    Runge Gaussian power 6 partitions: 32.
+    Runge Gaussian power 6 steps: 3.
+    Runge Gaussian power 7 difference:     0.0000000000000071.
+    Runge Gaussian power 7 time:     0.0000000000000000ms.
+    Runge Gaussian power 7 partitions: 21.
+    Runge Gaussian power 7 steps: 3.

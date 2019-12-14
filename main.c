@@ -274,14 +274,44 @@ void DoNewton (double segments[SEGMENT_COUNT][2])
     }
 }
 
-static void PrintInterpolationCoefficients (int nodeSetIndex, int runIndex, double *result)
+static void PrintInterpolationCoefficients (int nodeSetIndex, int runIndex, double *result, double *xs)
 {
     if (nodeSetIndex <= INTERPOLATION_RESULT_MUTE_AFTER)
     {
-        printf ("    Result coefficients for %d nodes, run #%d.\n", interpolationNodeSet[nodeSetIndex], runIndex);
+        if (runIndex != 0)
+        {
+            return;
+        }
+
+        printf ("    Result formula for %d nodes.\n", interpolationNodeSet[nodeSetIndex]);
+        double step = 8.0 / (interpolationNodeSet[nodeSetIndex] - 1);
+
         for (int index = 0; index < interpolationNodeSet[nodeSetIndex]; ++index)
         {
-            printf ("        # a%d = %0.16lf\n", index, result[index]);
+            printf ("%0.16lf", result[index]);
+            if (index > 0)
+            {
+                for (int mulIndex = 0; mulIndex < index; ++mulIndex)
+                {
+                    if (xs == NULL)
+                    {
+                        printf ("*(x-%20.16lf)", -4 + step * mulIndex);
+                    }
+                    else
+                    {
+                        printf ("*(x-%20.16lf)", xs[mulIndex]);
+                    }
+                }
+            }
+
+            if (index < interpolationNodeSet[nodeSetIndex] - 1)
+            {
+                printf ("+");
+            }
+            else
+            {
+                printf ("\n");
+            }
         }
     }
     else if (runIndex == 0)
@@ -296,7 +326,7 @@ void DoDifferentialInterpolation ()
     for (int nodeSetIndex = 0; nodeSetIndex < INTERPOLATION_NODE_SET_COUNT; ++nodeSetIndex)
     {
         time_t totalTime = 0;
-        const int runCount = 100;
+        const int runCount = 20;
 
         for (int runIndex = 0; runIndex < runCount; ++runIndex)
         {
@@ -305,7 +335,7 @@ void DoDifferentialInterpolation ()
             DifferentialInterpolation (Function, -4, 4, NULL, interpolationNodeSet[nodeSetIndex], &result);
 
             totalTime += clock () - begin;
-            PrintInterpolationCoefficients (nodeSetIndex, runIndex, result);
+            PrintInterpolationCoefficients (nodeSetIndex, runIndex, result, NULL);
             free (result);
         }
 
@@ -319,7 +349,7 @@ void DoChebyshevDifferentialInterpolation ()
     for (int nodeSetIndex = 0; nodeSetIndex < INTERPOLATION_NODE_SET_COUNT; ++nodeSetIndex)
     {
         time_t totalTime = 0;
-        const int runCount = 100;
+        const int runCount = 20;
 
         for (int runIndex = 0; runIndex < runCount; ++runIndex)
         {
@@ -328,7 +358,14 @@ void DoChebyshevDifferentialInterpolation ()
             ChebyshevDifferentialInterpolation (Function, -4, 4, interpolationNodeSet[nodeSetIndex], &result);
 
             totalTime += clock () - begin;
-            PrintInterpolationCoefficients (nodeSetIndex, runIndex, result);
+            double *xs = calloc (interpolationNodeSet[nodeSetIndex], sizeof (double));
+
+            for (int index = 0; index < interpolationNodeSet[nodeSetIndex]; ++index)
+            {
+                xs[index] = cos ((2 * index + 1) * M_PI / (2 * interpolationNodeSet[nodeSetIndex] + 2)) * 4;
+            }
+
+            PrintInterpolationCoefficients (nodeSetIndex, runIndex, result, xs);
             free (result);
         }
 
@@ -499,8 +536,8 @@ void DoBezier ()
         for (int index = 0; index < count; ++index)
         {
             x[index] = -4 + rand () * 8.0 / RAND_MAX;
-            // Если нужна нормальная прямая, то берём отсортированные точки.
-            //x[index] = -4 + 8.0 / (count - 1) * index;
+            // Если нужна нормальная кривая, то берём отсортированные точки.
+            x[index] = -4 + 8.0 / (count - 1) * index;
             y[index] = Function (x[index]);
         }
 
